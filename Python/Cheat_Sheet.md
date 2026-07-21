@@ -1,34 +1,59 @@
 # ⚡ Python Quick Revision Cheat Sheet
 
-A high-density reference sheet designed for 5-minute pre-interview review. Covers core syntax, high-value comparison tables, dunder protocols, concurrency matrices, and common pitfall traps.
+A high-density reference sheet designed for 5-minute pre-interview review. Covers core syntax, high-value comparison tables, dunder protocols, concurrency matrices, standard library power tools, time complexities, modern Python 3.8–3.13 syntax, and common pitfall traps.
 
 ---
 
-## 🚀 1. Core Syntax & Dunder Methods Cheat Sheet
+## 🚀 1. Extended Dunder & Protocol Methods Cheat Sheet
 
-| Dunder Method | Trigger Expression | Purpose & Context |
-|---------------|-------------------|-------------------|
-| `__init__(self, ...)` | `obj = MyClass()` | Instance initializer (returns `None`). |
-| `__new__(cls, ...)` | `obj = MyClass()` | Instance creator (allocates memory, returns new instance). Used for Singletons and Immutable subclassing. |
-| `__str__(self)` | `str(obj)`, `print(obj)` | User-readable string representation. |
-| `__repr__(self)` | `repr(obj)`, REPL output | Unambiguous developer string representation (ideally valid Python code `eval(repr(x)) == x`). |
-| `__call__(self, ...)` | `obj(*args)` | Makes instance callable like a function. |
-| `__getitem__(self, key)` | `obj[key]` | Indexing/slicing read access. |
-| `__setitem__(self, key, val)`| `obj[key] = val` | Indexing write access. |
-| `__len__(self)` | `len(obj)` | Collection size (must return non-negative int). |
-| `__enter__` / `__exit__` | `with obj as x:` | Context manager protocol. `__exit__` returns `True` to suppress exceptions. |
-| `__iter__` / `__next__` | `for x in obj:` | Iterator protocol. `__next__` raises `StopIteration` when exhausted. |
-| `__eq__` / `__hash__` | `a == b`, `hash(obj)` | Equality & hashing. If `__eq__` is overridden, `__hash__` defaults to `None` unless defined! |
-| `__slots__` | Class attribute | Restricts dynamic attributes, eliminates per-instance `__dict__` memory. |
+| Category | Dunder Method | Trigger Expression | Purpose & Key Detail |
+|----------|---------------|-------------------|----------------------|
+| **Lifecycle** | `__init__(self, ...)` | `obj = MyClass()` | Instance initializer (returns `None`). |
+| | `__new__(cls, ...)` | `obj = MyClass()` | Allocates memory & returns instance. First arg is `cls`. Required for Singletons & Immutable subclassing. |
+| | `__del__(self)` | Finalizer | Called when `ob_refcnt == 0`. Avoid for resource cleanup (unreliable due to cyclic GC). |
+| **Representation** | `__str__(self)` | `str(obj)`, `print(obj)` | User-friendly string. Defaults to `__repr__` if omitted. |
+| | `__repr__(self)` | `repr(obj)`, REPL | Unambiguous developer representation (ideally `eval(repr(x)) == x`). |
+| | `__format__(self, spec)` | `f"{obj:spec}"` | Custom string formatting specifier support. |
+| **Callable & Container**| `__call__(self, ...)` | `obj(*args)` | Makes object instance callable like a function. |
+| | `__getitem__(self, k)` | `obj[k]`, `obj[start:stop]` | Read access via indexing or slicing. |
+| | `__setitem__(self, k, v)`| `obj[k] = v` | Write access via indexing or slicing. |
+| | `__delitem__(self, k)` | `del obj[k]` | Key / index deletion. |
+| | `__len__(self)` | `len(obj)` | Container size (must return non-negative int). |
+| | `__contains__(self, item)`| `item in obj` | Membership test ($O(1)$ for set/dict, $O(N)$ for list). |
+| **Iteration** | `__iter__(self)` | `iter(obj)`, `for x in obj:`| Returns iterator object defining `__next__`. |
+| | `__next__(self)` | `next(it)` | Yields next item; raises `StopIteration` when exhausted. |
+| **Context Managers** | `__enter__` / `__exit__` | `with obj as x:` | Sync resource cleanup. `__exit__` returns `True` to suppress exceptions. |
+| | `__aenter__` / `__aexit__` | `async with obj as x:` | Async resource cleanup. Coroutines returning enter resource / exit handling. |
+| **Comparison & Hash** | `__eq__(self, other)` | `a == b` | Value equality. |
+| | `__hash__(self)` | `hash(obj)` | Hash value for dict keys / sets. Must be immutable. Overriding `__eq__` sets `__hash__ = None` unless defined! |
+| **Descriptors** | `__get__(self, inst, owner)`| `inst.attr` | Attribute getter in descriptor. |
+| | `__set__(self, inst, val)`| `inst.attr = val` | Attribute setter in descriptor (Data Descriptor). |
+| | `__set_name__(self, owner, name)`| Class definition | Automatically captures variable name assigned to descriptor in class. |
+| **Attribute Lookup**| `__getattr__(self, name)`| `obj.missing_attr` | Invoked **ONLY** if attribute is not found in instance `__dict__` or class hierarchy. |
+| | `__getattribute__(self, name)`| `obj.attr` | Intercepts **EVERY** attribute access unconditionally. Must call `super().__getattribute__()`. |
+| **Optimization** | `__slots__` | Class attribute | Restricts dynamic attributes, eliminates per-instance `__dict__` RAM (~200 bytes per instance savings). |
 
 ---
 
-## 📊 2. High-Value Comparison Tables
+## ⏱️ 2. Data Structure Time & Space Complexities
+
+| Data Structure | Access | Search | Insert (Push) | Delete (Pop) | Space | Notes / Module |
+|----------------|--------|--------|---------------|--------------|-------|----------------|
+| **List** (Dynamic Array) | $O(1)$ | $O(n)$ | $O(1)$ amortized append / $O(n)$ at index | $O(1)$ pop end / $O(n)$ pop index | $O(n)$ | Built-in |
+| **Deque** (Doubly Linked) | $O(n)$ | $O(n)$ | $O(1)$ left & right | $O(1)$ left & right | $O(n)$ | `collections.deque` |
+| **Dict** (Hash Table) | $O(1)$ avg | $O(1)$ avg | $O(1)$ avg insert | $O(1)$ avg delete | $O(n)$ | Insertion-ordered since 3.7 |
+| **Set** (Hash Set) | N/A | $O(1)$ avg | $O(1)$ avg insert | $O(1)$ avg delete | $O(n)$ | Unique items only |
+| **Heap / Priority Queue** | $O(1)$ min | $O(n)$ | $O(\log n)$ `heappush` | $O(\log n)$ `heappop` | $O(n)$ | `heapq` (Min-heap) |
+| **Bisections** | N/A | $O(\log n)$ `bisect` | $O(n)$ (requires list shift) | N/A | $O(1)$ | `bisect` (Sorted array) |
+
+---
+
+## 📊 3. High-Value Comparison Tables
 
 ### Table A: Mutable vs Immutable Data Types
-| Characteristic | Mutable (`list`, `dict`, `set`) | Immutable (`int`, `str`, `tuple`, `frozenset`) |
-|----------------|---------------------------------|------------------------------------------------|
-| **In-Place Modification** | Supported (`a.append(1)`) | Unsupported (`TypeError`) |
+| Characteristic | Mutable (`list`, `dict`, `set`, `bytearray`) | Immutable (`int`, `str`, `tuple`, `frozenset`, `bytes`) |
+|----------------|---------------------------------------------|--------------------------------------------------------|
+| **In-Place Modification** | Supported (`a.append(1)`, `d[k] = v`) | Unsupported (`TypeError`) |
 | **Hashability (`__hash__`)** | Not Hashable (cannot be dict keys/set elements) | Hashable (if all contained items are hashable) |
 | **Memory Allocation** | Dynamic resizing, higher overhead | Fixed allocation, optimized C memory |
 | **Pass-by-Assignment** | Mutations reflect in caller scope | Rebinding creates new object reference |
@@ -57,7 +82,106 @@ A high-density reference sheet designed for 5-minute pre-interview review. Cover
 
 ---
 
-## 💡 3. Memory Tricks & Quick Interview Notes
+## 🛠️ 4. Standard Library Power Utilities Cheat Sheet
+
+### `collections` Module
+- `defaultdict(factory)`: Avoids `KeyError` by providing automatic default values (`defaultdict(list)`, `defaultdict(int)`).
+- `Counter(iterable)`: Frequency map dictionary with helper `most_common(n)` ($O(k \log n)$).
+- `deque(maxlen=N)`: Double-ended queue with $O(1)$ appends/pops on both ends.
+- `ChainMap(d1, d2)`: Groups multiple dicts into a single updateable view without merging memory.
+- `namedtuple("Point", ["x", "y"])`: Lightweight tuple subclass with field name access.
+
+### `itertools` Module
+- `chain(*iterables)`: Flattens multiple iterables into a single continuous stream lazily.
+- `islice(iterable, stop)` or `islice(iterable, start, stop, step)`: Slices any generator/iterator lazily without creating a list copy.
+- `groupby(iterable, keyfunc)`: Groups consecutive matching elements (requires input to be sorted by `keyfunc` first!).
+- `product(*iterables, repeat=1)`: Cartesian product (replaces nested loops).
+- `permutations(p, r)` / `combinations(p, r)`: Combinatorial generators.
+
+### `functools` Module
+- `@lru_cache(maxsize=128)`: Memoizes function calls with Least Recently Used eviction.
+- `@cached_property`: Computes property once per instance and caches result as a normal instance attribute.
+- `partial(func, *args, **kwargs)`: Freezes a portion of function arguments, returning a new callable signature.
+- `reduce(func, iterable, initializer)`: Repeatedly applies binary function to collapse iterable into a single cumulative value.
+- `@singledispatch`: Transforms function into generic function overloading based on first argument type.
+
+---
+
+## 🆕 5. Modern Python Syntax & Features (3.8 – 3.13)
+
+```python
+# 1. Walrus Operator := (Assignment Expressions - Python 3.8)
+if (n := len(data)) > 10:
+    print(f"Data too long: {n} items")
+
+while (block := file.read(256)) != b"":
+    process(block)
+
+
+# 2. Positional-Only (/) and Keyword-Only (*) Parameters (Python 3.8)
+def configure(arg1, arg2, /, pos_or_kw, *, kw_only1, kw_only2):
+    # arg1, arg2 MUST be passed positionally
+    # kw_only1, kw_only2 MUST be passed as keyword arguments
+    pass
+
+
+# 3. Structural Pattern Matching match/case (Python 3.10)
+match response:
+    case {"status": 200, "data": dict(payload)}:
+        handle_payload(payload)
+    case {"status": 400 | 404 as code}:
+        handle_error(code)
+    case _:
+        handle_fallback()
+
+
+# 4. Exception Groups & except* (Python 3.11)
+try:
+    async with asyncio.TaskGroup() as tg:
+        tg.create_task(coro1())
+        tg.create_task(coro2())
+except* ValueError as eg:
+    print("Handled ValueErrors:", eg.exceptions)
+
+
+# 5. Type Statement & Type Alias (Python 3.12 - PEP 695)
+type Point = tuple[float, float]
+type Vector[T] = list[T]
+```
+
+---
+
+## ⚡ 6. Asyncio Core Cheat Reference
+
+```python
+import asyncio
+
+# Coroutine function definition
+async def fetch_data(url: str) -> dict:
+    await asyncio.sleep(1.0) # Non-blocking sleep!
+    return {"url": url, "status": 200}
+
+async def main():
+    # 1. Schedule Task concurrently on event loop
+    task1 = asyncio.create_task(fetch_data("https://api.com/1"))
+    task2 = asyncio.create_task(fetch_data("https://api.com/2"))
+    
+    # 2. Concurrent execution with gather
+    results = await asyncio.gather(task1, task2, return_exceptions=True)
+    
+    # 3. Modern Structured Concurrency with TaskGroup (Python 3.11+)
+    async with asyncio.TaskGroup() as tg:
+        t1 = tg.create_task(fetch_data("https://api.com/3"))
+        t2 = tg.create_task(fetch_data("https://api.com/4"))
+    # Both tasks guaranteed to be finished or cleanly cancelled on exit!
+
+# Run entrypoint
+asyncio.run(main())
+```
+
+---
+
+## 💡 7. Memory Tricks & Quick Interview Notes
 
 1. **Small Integer Caching**: CPython pre-allocates integer objects from `-5` to `256`.
    - `a = 256; b = 256; a is b` $\rightarrow$ `True`.
@@ -70,7 +194,7 @@ A high-density reference sheet designed for 5-minute pre-interview review. Cover
 
 ---
 
-## ⚠️ 4. Production Pitfalls & Common Bugs
+## ⚠️ 8. Production Pitfalls & Common Bugs
 
 ```python
 # PITFALL 1: Late Binding in Closures
@@ -99,11 +223,27 @@ try:
     process()
 except Exception as e: # Better than bare `except:` but specify concrete types where possible!
     logger.error(e)
+
+
+# PITFALL 4: Dict Key Collision between Booleans, Floats, and Integers
+# In Python, True == 1 == 1.0 and hash(True) == hash(1) == hash(1.0) == 1
+d = {1: "int", True: "bool", 1.0: "float"}
+print(len(d)) # Output: 1! Value is "float", key is 1.
+
+
+# PITFALL 5: Re-raising Exceptions Improperly
+try:
+    val = int("invalid")
+except ValueError as e:
+    # WRONG: raise e  <-- Resets traceback to this line!
+    # RIGHT: raise    <-- Re-raises original exception preserving full stack trace!
+    # RIGHT: raise CustomError() from e <-- Chained exception (sets __cause__)
+    raise
 ```
 
 ---
 
-## ⚡ 5. LEGB Scope Resolution Summary
+## ⚡ 9. LEGB Scope Resolution Summary
 
 ```
 +------------------------------------+
@@ -120,3 +260,4 @@ except Exception as e: # Better than bare `except:` but specify concrete types w
 +------------------------------------+
 ```
 *Variables marked `global x` bind to GLOBAL scope. Variables marked `nonlocal x` bind to nearest ENCLOSING scope.*
+
