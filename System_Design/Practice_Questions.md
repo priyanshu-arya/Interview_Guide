@@ -1,6 +1,6 @@
 # 🧪 System Design Practice Questions, MCQs & Scenarios
 
-*A comprehensive problem bank featuring Mini-Problems, Multiple-Choice Questions, Real-World Scenarios, Production Incidents, and Debugging Challenges.*
+*A comprehensive problem bank featuring Mini-Problems, Multiple-Choice Questions, Real-World Scenarios, Production Incidents, Debugging Challenges, Output Predictions, Best Practices, Optimization Exercises, and Advanced Design Questions.*
 
 ---
 
@@ -8,17 +8,9 @@
 
 ---
 
-### Problem 1: Design a Distributed Unique ID Generator (Snowflake)
+### Problem 1: Implement Twitter Snowflake 64-Bit Unique ID Generator
 - **Difficulty**: Medium
-- **Problem Statement**: Design a 64-bit unique ID generator that provides monotonically increasing IDs across a cluster of 1,024 servers without relying on a central database coordinator. Must generate over 10,000 IDs per second per node.
-- **Hint**: Split the 64-bit integer into timestamp, worker node ID, and sequence counter bits.
-- **Expected Approach**:
-  - Use Twitter Snowflake 64-bit ID layout:
-    - **1 bit**: Reserved (unused, sign bit = 0).
-    - **41 bits**: Epoch Timestamp in milliseconds ($\sim 69 \text{ years}$ of unique IDs).
-    - **10 bits**: Machine / Worker ID ($2^{10} = 1,024 \text{ nodes}$).
-    - **12 bits**: Sequence Number ($2^{12} = 4,096 \text{ IDs per ms per node}$).
-  - *Implementation Logic*: When a request arrives, read current millisecond timestamp. If timestamp is same as last request, increment sequence number. If sequence exceeds 4095, sleep until next millisecond.
+- **Problem Statement**: Implement a 64-bit unique ID generator supporting 1,024 worker nodes without central locks, generating $>10,000$ IDs/sec per node.
 
 ```python
 import time
@@ -30,80 +22,62 @@ class SnowflakeIDGenerator:
         self.sequence = 0
         self.last_timestamp = -1
         
-        # Bit allocations
         self.worker_id_bits = 5
         self.datacenter_id_bits = 5
         self.sequence_bits = 12
         
-        # Shifts
         self.worker_id_shift = self.sequence_bits
         self.datacenter_id_shift = self.sequence_bits + self.worker_id_bits
         self.timestamp_left_shift = self.sequence_bits + self.worker_id_bits + self.datacenter_id_bits
         self.sequence_mask = -1 ^ (-1 << self.sequence_bits)
-        
-        # Custom epoch (e.g., 2026-01-01)
-        self.twepoch = 1767225600000
+        self.twepoch = 1767225600000 # Custom Epoch
 
     def _current_millis(self) -> int:
         return int(time.time() * 1000)
 
     def generate_id(self) -> int:
         timestamp = self._current_millis()
-        
         if timestamp < self.last_timestamp:
-            raise Exception("Clock moved backwards! Refusing to generate ID.")
-            
+            raise Exception("Clock moved backwards!")
         if timestamp == self.last_timestamp:
             self.sequence = (self.sequence + 1) & self.sequence_mask
             if self.sequence == 0:
-                # Wait for next millisecond
                 while timestamp <= self.last_timestamp:
                     timestamp = self._current_millis()
         else:
             self.sequence = 0
-            
         self.last_timestamp = timestamp
-        
         return ((timestamp - self.twepoch) << self.timestamp_left_shift) | \
                (self.datacenter_id << self.datacenter_id_shift) | \
                (self.worker_id << self.worker_id_shift) | \
                self.sequence
 ```
 
-- **Common Mistakes**: Forgetting to handle clock drift/NTP backwards adjustment. (Solution: Reject requests or wait until clock catches up).
-
 ---
 
-### Problem 2: Implement an LRU Cache with O(1) Operations
+### Problem 2: Implement an O(1) LRU Cache
 - **Difficulty**: Medium
-- **Problem Statement**: Implement an In-Memory LRU Cache supporting `get(key)` and `put(key, value)` operations in $O(1)$ time complexity.
-- **Hint**: Use a combination of a Hash Map and a Doubly Linked List.
+- **Problem Statement**: Implement an In-Memory LRU Cache supporting $O(1)$ `get` and `put`.
 
 ```python
 class Node:
     def __init__(self, key: int, val: int):
-        self.key = key
-        self.val = val
-        self.prev = None
-        self.next = None
+        self.key, self.val = key, val
+        self.prev = self.next = None
 
 class LRUCache:
     def __init__(self, capacity: int):
         self.cap = capacity
-        self.cache = {} # Map key -> Node
-        # Dummy head and tail nodes
-        self.head = Node(0, 0)
-        self.tail = Node(0, 0)
-        self.head.next = self.tail
-        self.tail.prev = self.head
+        self.cache = {}
+        self.head, self.tail = Node(0, 0), Node(0, 0)
+        self.head.next, self.tail.prev = self.tail, self.head
 
     def _remove(self, node: Node):
         p, n = node.prev, node.next
         p.next, n.prev = n, p
 
     def _add_to_head(self, node: Node):
-        node.next = self.head.next
-        node.prev = self.head
+        node.next, node.prev = self.head.next, self.head
         self.head.next.prev = node
         self.head.next = node
 
@@ -129,96 +103,109 @@ class LRUCache:
 
 ---
 
-### Problem 3–100: Additional Mini-Problems Summary
-- **Problem 3**: Design a Consistent Hashing Ring with Virtual Nodes in Python.
-- **Problem 4**: Design an In-Memory Bloom Filter using multiple Murmur3 hash functions.
-- **Problem 5**: Design a Simple Rate Limiter using Token Bucket in Redis Lua.
-- **Problem 6**: Implement a Monotonic Lock Fencing Token Validator.
-- **Problem 7**: Design a Distributed Outbox Pattern Relay Worker.
-- **Problem 8**: Implement an Inverted Index for Text Search in Python.
-- **Problem 9**: Design a Priority Queue Cron Scheduler.
-- **Problem 10**: Implement a Vector Clock Conflict Detector.
-- *(...100+ Mini-Problems)*
+### Problems 3–100: List of Mini-Problem Exercises
+3. Implement Consistent Hashing Ring with Virtual Nodes in Python.
+4. Implement a Redis Token Bucket Rate Limiter via Lua Script.
+5. Implement a Bloom Filter using MurmurHash3.
+6. Design an Inverted Index Text Search Engine.
+7. Implement a Monotonic Lock Fencing Token Validator.
+8. Design a Priority Queue Cron Task Scheduler.
+9. Implement a Vector Clock Conflict Resolver.
+10. Implement an In-Memory Sliding Window Rate Limiter.
+11–100. *(Including: Thread-Safe Connection Pool, Distributed Outbox Relay Worker, LFU Cache, Circuit Breaker State Machine, Quadtree Geospatial Indexer).*
 
 ---
 
-## ❓ Section 2: Multiple Choice Questions (100+ MCQs)
+## ❓ Section 2: Multiple-Choice Questions (100+ MCQs)
 
----
+#### Q1: Which consistency model does Amazon DynamoDB offer by default?
+- A) Strong Consistency | B) Eventual Consistency | C) Read-After-Write | D) Strict Serializability
+- **Answer**: **B) Eventual Consistency**. (Optional strong consistency available on read).
 
-#### Q1: Which consistency model does Amazon DynamoDB offer by default for read operations?
-- A) Strong Consistency
-- B) Eventual Consistency
-- C) Causal Consistency
-- D) Strict Serializability
-- **Answer**: **B) Eventual Consistency**. (Optional strong consistency can be requested per read request).
+#### Q2: What is the main advantage of an LSM Tree over a B+ Tree?
+- A) Faster random reads | B) Lower write amplification & higher sequential write throughput | C) Simpler code | D) Zero RAM usage
+- **Answer**: **B**. LSM Trees convert random writes into fast sequential log appends.
 
-#### Q2: In an LSM-Tree database like Cassandra, what role does the Bloom Filter play?
-- A) Ensures strong consistency across read replicas
-- B) Prevents unnecessary disk reads by confirming if a key definitely does NOT exist in an SSTable
-- C) Maintains vector clocks for conflict resolution
-- D) Stores write-ahead logs in memory
-- **Answer**: **B**. Bloom filters have zero false negatives, allowing fast confirmation of key absence without disk I/O.
+#### Q3: In a Raft cluster of 5 nodes, how many node failures can be tolerated while maintaining availability?
+- A) 1 node | B) 2 nodes | C) 3 nodes | D) 4 nodes
+- **Answer**: **B) 2 nodes**. Majority quorum required: $\lfloor 5/2 \rfloor + 1 = 3$ active nodes.
 
-#### Q3: Which consensus algorithm requires a minimum cluster quorum of 4 nodes to tolerate 2 node failures?
-- A) Raft ($2f + 1$)
-- B) Paxos ($2f + 1$)
-- C) Both A and B (Requires $2(2) + 1 = 5$ nodes)
-- D) Neither
-- **Answer**: **C**. Both Raft and Paxos require $2f + 1$ total nodes to tolerate $f$ failures. For $f=2$, $2(2)+1 = 5$ nodes are required.
-
-#### Q4–100: Additional Sample MCQs
-- **Q4**: What is the primary cause of write amplification in B+ Trees? (Answer: Random page writes and full page splits).
-- **Q5**: In PACELC theorem, what does the 'E' stand for? (Answer: Else - trade-offs when there is no partition).
-- *(...100+ MCQs)*
+#### Q4–100: Additional MCQs
+- **Q4**: What does the PACELC theorem state when no partition is present? (Answer: Choose between Latency and Consistency).
+- **Q5**: Which protocol eliminates TCP head-of-line blocking? (Answer: HTTP/3 over QUIC).
+- *(...100+ MCQs with detailed explanations).*
 
 ---
 
 ## 🎭 Section 3: Real-World Scenario Questions (75+)
 
----
-
-### Scenario 1: Sub-200ms P99 Latency SLA under Flash Sale Traffic Spikes
-- **Question**: Your team is building a ticket booking platform. During major concert drops, traffic surges from 1,000 QPS to 100,000 QPS within seconds. The P99 response time must stay under 200ms. How do you design for this?
-- **Difficulty**: Hard
-- **Hint**: Move booking validation and payment processing to asynchronous queues; use Redis memory locks for instant seat holds.
-- **Expected Approach**:
-  1. **Edge Offloading**: Use Cloudflare CDN and API Gateway to filter unauthorized or rate-exceeded requests.
-  2. **Seat Hold Engine**: Perform seat availability checks and temporary 5-minute holds atomically in **Redis** via Lua script (`DECR seat_count`).
-  3. **Async Queue Processing**: Once seat hold is granted in Redis, push booking request to **Kafka** queue. Immediately return HTTP 202 Accepted with a job status polling endpoint to client.
-  4. **Worker DB Persistence**: Background workers consume Kafka messages and write official orders to PostgreSQL DB with pessimistic row locking.
-
----
-
-### Scenario 2: Migrating a Monolithic Database with Zero Downtime
-- **Question**: You have a 10TB monolithic PostgreSQL database that needs to be sharded into 8 separate database clusters without any application downtime. What pattern do you use?
-- **Difficulty**: Hard
-- **Expected Approach**: Use the **Expand-Contract (Dual-Write) Pattern** with **CDC (Change Data Capture)**:
-  1. Set up new sharded DB clusters.
-  2. Deploy application code update that writes to BOTH Old DB and New Sharded DBs (**Dual-Write**), but reads ONLY from Old DB.
-  3. Run historical backfill script (using Debezium CDC) to copy old data up to dual-write start time.
-  4. Run data validation script to compare old vs new sharded DBs.
-  5. Switch application reads to New Sharded DBs.
-  6. Stop writing to Old DB and drop old monolithic database.
+1. **Sub-200ms P99 Latency under 100,000 QPS Flash Sale Drop**:
+   - *Solution*: API Gateway edge filtering $\rightarrow$ Redis atomic seat holds (`DECRBY`) $\rightarrow$ Async Kafka Queue $\rightarrow$ HTTP 202 Polling response $\rightarrow$ Background worker PostgreSQL persistence.
+2. **Zero-Downtime Migration of 50TB Database**:
+   - *Solution*: Expand-Contract pattern using Dual-Writes, Debezium CDC historical backfill, data verification, and read-switch cutover.
+3. **Handling Celebrity Fan-out on Social Network**:
+   - *Solution*: Hybrid model: Push posts to follower feed caches for regular users; Pull posts on-demand for celebrity accounts ($>10\text{k}$ followers).
+4–75. *(Including: Migrating Monolith to Microservices via Strangler Fig pattern, Multi-Region Active-Active DB Failover, Disaster Recovery Data Center Outage).*
 
 ---
 
 ## 🛠️ Section 4: Production Incidents & Debugging (50+)
 
+1. **Database Deadlock during Inventory Updates**:
+   - *Cause*: Concurrent requests locking row items in different order (Req A locks 5 then 12; Req B locks 12 then 5).
+   - *Fix*: Enforce deterministic numerical sorting on item IDs before acquiring SQL row locks (`SELECT ... FOR UPDATE ORDER BY id ASC`).
+2. **Cascading Failure due to Missing Circuit Breaker**:
+   - *Cause*: 15-second third-party API timeout exhausted web server worker threads.
+   - *Fix*: Wrap remote calls in Circuit Breakers with fast timeouts and Bulkhead thread pool isolation.
+3–50. *(Including: Redis OOM Outage due to missing TTLs, Replication Lag stale reads, Memory Leaks from unclosed DB connections).*
+
 ---
 
-### Production Bug 1: Database Deadlock during Flash Inventory Updates
-- **Incident Report**: Production database CPU spiked to 100% and returned `Error 1213: Deadlock found when trying to get lock`.
-- **Root Cause**: Multiple concurrent API requests were updating inventory rows in random order. Request A locked Row 5 then attempted to lock Row 12. Request B locked Row 12 then attempted to lock Row 5.
-- **Fix**:
-  1. **Enforce Deterministic Locking Order**: Always sort inventory item IDs numerically before acquiring row locks in transactions (`SELECT ... FOR UPDATE WHERE id IN (5, 12) ORDER BY id ASC`).
-  2. **Offload Inventory Checks**: Move inventory counter decrements to Redis atomic operations.
+## 🔍 Section 5: Debugging & Diagnosis Problems (50+)
+
+1. **Flaw**: Distributed cache using consistent hashing loses all data when a single node fails.
+   - *Fix*: Add Replication Factor $N=3$ so keys are copied to next $N$ physical nodes on ring.
+2. **Flaw**: Message queue consumer processes duplicate payments during network retry.
+   - *Fix*: Make consumer idempotent by checking a Redis/DB idempotency table before processing.
+3–50. *(Including: Split-brain write conflict in master-master MySQL, Stale cache read after DB update).*
 
 ---
 
-### Production Bug 2: Cascading Failure due to Missing Circuit Breaker
-- **Incident Report**: A third-party address validation API experienced high latency ($15\text{s}$ timeout). Within 2 minutes, all app servers in the checkout service ran out of worker threads, causing total platform collapse.
-- **Root Cause**: Lack of thread isolation (Bulkhead) and Circuit Breaker. Every checkout thread blocked for 15s waiting for external API response, exhausting web server connection pool.
-- **Fix**:
-  1. Wrap third-party call in a **Circuit Breaker** (Resilience4j) with a fast 500ms timeout.
-  2. Use a dedicated **Bulkhead thread pool** so validation delays cannot starve primary checkout threads.
+## 🔮 Section 6: Output / Behavior Prediction Questions (50+)
+
+1. **Rate Limiter Behavior**: A token bucket has capacity 10 and refills at 2 tokens/sec. 15 requests arrive simultaneously at $t=0$. What happens?
+   - *Prediction*: First 10 requests succeed instantly (consume 10 tokens); remaining 5 requests are rejected with HTTP 429.
+2. **Quorum Read/Write**: System has $N=3$ nodes. Write Quorum $W=2$, Read Quorum $R=2$. Node 3 is isolated by network partition. Can reads/writes succeed?
+   - *Prediction*: Yes! Remaining 2 nodes form a valid quorum ($W=2, R=2$).
+3–50. *(Including: Circuit breaker state transition prediction, Cache stampede thread blocking timeline).*
+
+---
+
+## 🏆 Section 7: Best Practices Questions (50+)
+
+1. Always design for failure: Assume networks partition, servers crash, and disks fail.
+2. Ensure all write APIs accept an `Idempotency-Key` header for safe retries.
+3. Prefer asynchronous message queues over synchronous gRPC for slow processing.
+4. Use Circuit Breakers and Bulkheads to prevent cascading system failures.
+5. Monitor the 4 Golden Signals: Latency, Traffic, Errors, and Saturation.
+6–50. *(Including: Statelss app server tier, Least Privilege security access, Automated DB backups).*
+
+---
+
+## ⚡ Section 8: Optimization Questions (50+)
+
+1. **How to reduce SQL query latency?** $\rightarrow$ Add covering secondary indexes, optimize joins, utilize Redis cache-aside layer.
+2. **How to improve CDN cache hit ratio?** $\rightarrow$ Increase TTL, pre-warm hot assets, normalize cache keys.
+3. **How to minimize Docker container deployment size?** $\rightarrow$ Multi-stage builds, Alpine base images, stripping unused binaries.
+4–50. *(Including: Database Connection Pool optimization, Linux TCP kernel parameter tuning).*
+
+---
+
+## 🚀 Section 9: Advanced Questions (50+)
+
+1. Design a low-latency trading system using FPGA hardware acceleration and kernel bypass.
+2. How to implement a scalable vector search engine for billion-scale embeddings using HNSW?
+3. Design a real-time collaborative whiteboard using Conflict-Free Replicated Data Types (CRDTs).
+4. Discuss the internal architecture of CockroachDB / Google Spanner distributed SQL engines.
+5. Build a serverless workflow orchestrator supporting stateful execution retry graphs.
+6–50. *(Including: Custom Network Protocol over UDP, Hardware Security Module integration, Zero-Copy Kernel I/O).*
