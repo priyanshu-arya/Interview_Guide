@@ -1,184 +1,112 @@
-# 🏢 Top Company-Inspired Python Interview Questions
+# 🏢 Top Company-Inspired Python Interview Questions & Frequently Rejected Patterns
 
-A curated collection of Python interview themes, architecture tasks, and coding challenges inspired by recurring hiring patterns at top-tier tech companies.
-
----
-
-## 🎯 Company Categories & Hiring Focus
-
-| Category | Representative Companies | Technical Focus Areas |
-|----------|--------------------------|-----------------------|
-| **Big Tech / Cloud Infrastructure** | Google, Microsoft, Meta, Amazon, Apple | CPython internals, memory management, garbage collection, static typing, low-level concurrency, custom libraries. |
-| **High-Scale Streaming & Backend** | Netflix, Uber, Spotify, Stripe, Airbnb | `asyncio` event loops, non-blocking I/O, custom context managers, zero-copy buffer views, microservice connection pooling. |
-| **AI Infrastructure & Compute Labs** | Nvidia, OpenAI, Databricks, Hugging Face | Memory profiling (`tracemalloc`), zero-copy buffer protocols (`memoryview`), C-Extensions, multiprocessing, PyTorch/NumPy interop. |
-| **FinTech & High-Throughput E-Commerce** | Razorpay, Swiggy, Zomato, PayPal, Adobe | Thread safety, atomic operations, cache eviction algorithms (LRU/LFU), fault-tolerant decorator pipelines. |
+A curated collection of company-specific technical interview questions and the **Top 50 Frequently Rejected Questions** inspired by real-world candidate evaluation patterns at FAANG, Unicorns, and top tech companies.
 
 ---
 
-## 📌 Company-Inspired Question Bank
+## 📋 Table of Contents
 
-### 1. High-Concurrency Rate Limiter Decorator
-- **Commonly Asked By**: Netflix, Uber, Stripe, Razorpay
-- **Why This Question Matters**: Tests understanding of closures, state management across requests, threading locks, and decorator wrapper architecture.
-- **Problem Scenario**: Design a decorator `@rate_limit(max_calls=10, period=1.0)` that restricts a function call to at most $N$ executions per time window. Excess calls must raise a custom `RateLimitExceeded` exception.
-
-```python
-import time
-import threading
-from functools import wraps
-
-class RateLimitExceeded(Exception):
-    pass
-
-def rate_limit(max_calls: int, period: float):
-    def decorator(func):
-        calls = []
-        lock = threading.Lock()
-
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            nonlocal calls
-            with lock:
-                now = time.perf_counter()
-                # Remove timestamps older than period
-                calls = [t for t in calls if now - t < period]
-                if len(calls) >= max_calls:
-                    raise RateLimitExceeded(f"Rate limit of {max_calls} calls per {period}s exceeded.")
-                calls.append(now)
-            return func(*args, **kwargs)
-        return wrapper
-    return decorator
-```
-
-- **Expected Answer & Follow-up Questions**:
-  1. *Follow-up*: How does this scale in multi-process worker environments? *(Requires a shared distributed store like Redis using leaky bucket / token bucket Lua scripts).*
-  2. *Follow-up*: What is the time complexity of the list filtering step? How would you optimize it? *(Use `collections.deque` with sliding window for $O(1)$ pop operations).*
-- **Interviewer Tips**: Focus on thread safety (`threading.Lock`) and correct state retention using `nonlocal`.
+1. [Top 50 Frequently Rejected Questions & Candidate Traps](#top-50-frequently-rejected-questions)
+2. [Company-Inspired Question Bank & Architecture Scenarios](#company-inspired-question-bank)
 
 ---
 
-### 2. Custom Thread-Safe Connection Pool Manager
-- **Commonly Asked By**: Amazon, Microsoft, Databricks
-- **Why This Question Matters**: Evaluates object resource management, context manager protocols, semaphores, and graceful cleanup.
-- **Problem Scenario**: Create a reusable `ConnectionPool` class that limits total open socket connections. Code using `with pool.get_connection() as conn:` must block if no connections are available and return the connection to the pool upon exit.
+## 🚫 Top 50 Frequently Rejected Questions & Candidate Traps
 
-```python
-import queue
-import threading
-from contextlib import contextmanager
+Where candidates fail due to incomplete knowledge, missing edge cases, overgeneralizations, or non-production code.
 
-class ConnectionPool:
-    def __init__(self, capacity: int):
-        self._pool = queue.Queue(maxsize=capacity)
-        for i in range(capacity):
-            self._pool.put(f"DB_Connection_{i+1}")
-
-    @contextmanager
-    def get_connection(self, timeout: float = 5.0):
-        try:
-            conn = self._pool.get(block=True, timeout=timeout)
-        except queue.Empty:
-            raise RuntimeError("Connection pool exhausted timeout")
-        try:
-            yield conn
-        finally:
-            self._pool.put(conn)
-```
-
-- **Expected Answer & Follow-up Questions**:
-  1. *Follow-up*: What happens if the connection becomes stale or dropped during use? *(Implement health-check ping before yielding, recreating broken socket connections).*
-- **Interviewer Tips**: Use `queue.Queue` because it handles internal thread locking and blocking wait logic natively.
-
----
-
-### 3. Zero-Copy Large Binary File Stream Aggregator
-- **Commonly Asked By**: Google, Nvidia, Meta, Airbnb
-- **Why This Question Matters**: Distinguishes candidates who know how to avoid $O(N)$ memory crashes when handling multi-gigabyte files.
-- **Problem Scenario**: Read a giant binary stream or log file, extract fixed headers using `struct` and `memoryview`, and aggregate stats without loading the whole file into RAM.
-
-```python
-import struct
-
-def parse_binary_records(filepath: str):
-    # Header format: 4 bytes unsigned int (ID), 8 bytes double (value)
-    record_struct = struct.Struct(">Id") 
-    record_size = record_struct.size
-
-    with open(filepath, "rb") as f:
-        while chunk := f.read(record_size * 1000): # Read batch of 1000 records
-            view = memoryview(chunk)
-            for offset in range(0, len(view), record_size):
-                record_bytes = view[offset : offset + record_size]
-                rec_id, val = record_struct.unpack(record_bytes)
-                yield rec_id, val
-```
-
-- **Expected Answer & Follow-up Questions**:
-  1. *Follow-up*: How does `memoryview` avoid memory copying? *(Refers to underlying buffer pointer directly without creating intermediate bytes objects).*
+| # | Question asked by Interviewer | Candidate's Flawed Answer (Rejection Reason) | Proper Production-Grade Answer |
+|---|-------------------------------|----------------------------------------------|--------------------------------|
+| 1 | "What is the Global Interpreter Lock (GIL)?" | "Python only runs 1 thread at a time, so threading is completely useless." | GIL prevents parallel execution of Python bytecode across multi-cores, BUT CPython releases GIL during OS I/O system calls. Threading is effective for I/O-bound tasks. |
+| 2 | "When would you use `__slots__`?" | "Always, because it makes everything faster and better." | `__slots__` eliminates `__dict__` to save memory. BUT it restricts dynamic attribute creation and requires careful inheritance handling (slots needed in parent and child). |
+| 3 | "How to deduplicate a list preserving order?" | "Convert to set then back to list (`list(set(l))`)." | Converting to `set` destroys original order. Use `list(dict.fromkeys(l))` or `[x for i, x in enumerate(l) if x not in l[:i]]`. |
+| 4 | "Difference between `append()` and `extend()`" | Confuses appending iterable as single nested element vs extending elements. | `lst.append([1,2])` yields `[..., [1,2]]`; `lst.extend([1,2])` yields `[..., 1, 2]`. |
+| 5 | "Implement a Singleton in Python" | Uses global variable or misses thread-safety locks. | Implement double-checked locking using `threading.Lock()` inside `__new__`, or use module-level singletons. |
+| 6 | "What are decorators?" | "Functions that change other functions" but fails to write `@wraps` or handling arguments. | Higher-order functions wrapping callables. Must use `@functools.wraps` to preserve `__name__` and `__doc__`. |
+| 7 | "How to handle large 50GB file processing?" | Reads entire file into RAM via `f.readlines()`. | Use generator streams (`for line in f:` or chunked `f.read(8192)`), consuming $O(1)$ memory. |
+| 8 | "What is `asyncio` and how does it work?" | "It runs functions in parallel on multiple CPU cores." | Single-threaded cooperative multitasking via event loop. Does not provide CPU parallelism. |
+| 9 | "Write a custom Context Manager" | Forgets `__exit__` parameter signature or doesn't return resource in `__enter__`. | Must define `__enter__(self)` returning resource, and `__exit__(self, exc_type, exc_val, exc_tb)`. |
+| 10 | "What is the MRO in multiple inheritance?" | Cannot explain Diamond Problem or C3 Linearization. | C3 Linearization determines deterministic resolution order accessible via `Class.mro()`. |
+| 11 | "Difference between `is` and `==`" | Reverses meanings ("`is` checks value, `==` checks reference"). | `==` checks value equality (`__eq__`); `is` checks memory address identity (`id(a) == id(b)`). |
+| 12 | "Explain monkey patching" | "Editing source code files on disk at runtime." | Dynamically overriding class/module attributes in memory at runtime (`module.func = mock_func`). |
+| 13 | "Why use `if __name__ == '__main__':`?" | "Required for script to execute." | Prevents top-level code from executing automatically when module is imported by another script. |
+| 14 | "How does argument passing work?" | "Pass by value" or "Pass by reference". | Python uses **pass-by-assignment**. Rebinding local parameter doesn't affect caller; mutating object in-place does. |
+| 15 | "What happens when catching `Exception`?" | Bare `except:` or catching `BaseException`. | Bare `except:` swallows `KeyboardInterrupt` and `SystemExit`. Catch specific exceptions or `Exception`. |
+| 16 | "Difference between `__getattr__` and `__getattribute__`" | Thinks both do the same thing. | `__getattribute__` intercepts EVERY access; `__getattr__` is called ONLY when attribute is missing. |
+| 17 | "How do default arguments work?" | Uses mutable default `def f(lst=[])`. | Default arguments are evaluated ONCE at function definition time, creating persistent state across calls. |
+| 18 | "Why is `lambda` limited?" | "It's just slower." | Syntax restriction: lambdas can only contain a single expression, not multi-line statements. |
+| 19 | "What does `yield from` do?" | "Same as `yield` in a loop." | Delegating iterator protocol: transparently channels values, exceptions, and `send()` returns to sub-generators. |
+| 20 | "Difference between `threading` and `multiprocessing`" | Confuses memory sharing and GIL impact. | Threads share memory space but bound by GIL; processes have separate RAM and bypass GIL. |
+| 21 | "What is string interning?" | Doesn't know why `'a' * 20 is 'a' * 20` is True. | Reusing immutable string allocations for identifier-like string literals. |
+| 22 | "How does `dict` maintain insertion order?" | "It doesn't, sets and dicts are unordered." | Since Python 3.7+, dicts use compact array + hash table layout preserving insertion order. |
+| 23 | "What is `super()`?" | "Calls parent class method" without understanding MRO dispatch. | Calls next method in the class's C3 MRO chain, enabling cooperative multiple inheritance. |
+| 24 | "Difference between `range` and `xrange`" | Mentions `xrange` in Python 3 context. | `xrange` was Python 2; Python 3 `range` is a lazy sequence type producing items on demand. |
+| 25 | "How to copy an object?" | `b = a` creates a copy. | Assignment `=` creates a new reference to the SAME object. Use `copy.copy()` or `copy.deepcopy()`. |
+| 26 | "What is `__init__`?" | "It creates the object in memory." | `__new__` creates the object; `__init__` initializes attributes on the created instance. |
+| 27 | "How to make a variable private?" | "Python has `private` keyword." | Python uses name mangling (`__var`) and convention (`_var`); no hard access control keywords. |
+| 28 | "What is a closure?" | Cannot explain non-local scope variable retention. | Function retaining bindings to free variables in its enclosing lexical scope. |
+| 29 | "Difference between `map()` and list comprehension" | "List comprehension is always faster." | `map()` returns a lazy iterator; comprehension builds eager list. Speed depends on C-builtins. |
+| 30 | "What is `functools.wraps`?" | "Makes decorators run faster." | Preserves `__name__`, `__doc__`, and metadata of wrapped function on decorator wrapper. |
+| 31 | "How to profile Python code?" | Using `print(time.time())` everywhere. | Use standard profiling tools: `cProfile`, `line_profiler`, and `tracemalloc`. |
+| 32 | "What is `typing.Protocol`?" | "Same as `abc.ABC`." | Structural subtyping (duck typing static check) vs nominal subtyping (`abc.ABC`). |
+| 33 | "How does `sys.path` work?" | Confuses OS `PATH` with Python `sys.path`. | `sys.path` is list of directory paths searched by Python for module imports. |
+| 34 | "What is `dataclass`?" | "Generates database table schemas." | `@dataclass` generates boilerplate dunder methods (`__init__`, `__repr__`, `__eq__`) for classes. |
+| 35 | "Why use `f-strings`?" | "Just syntax sugar for `%` format." | Faster execution (evaluated at runtime as formatted bytecode) and better readability. |
+| 36 | "How to handle timezone in datetime?" | Using `datetime.now()` without timezone info. | Naive datetimes cause bugs. Use timezone-aware datetimes (`datetime.now(timezone.utc)`). |
+| 37 | "What is `weakref`?" | "Reduces memory size of objects." | Reference to object that doesn't increment `ob_refcnt`, preventing reference cycles. |
+| 38 | "What is `pickle` security risk?" | "Pickle files can corrupt." | Arbitrary code execution vulnerability: untrusted unpickling executes payload in `__reduce__`. |
+| 39 | "What is `asyncio.TaskGroup`?" | Never heard of Python 3.11 TaskGroup. | Structured concurrency context manager guaranteeing task completion or exception cleanup. |
+| 40 | "How to create custom exception?" | Inherits from `BaseException`. | BaseException catches system exit signals. Custom exceptions should inherit from `Exception`. |
+| 41 | "Difference between `iter()` and `next()`" | Confuses iterable and iterator protocols. | `iter()` returns iterator object (`__iter__`); `next()` retrieves next item (`__next__`). |
+| 42 | "What is `contextvars`?" | Uses `threading.local` in async code. | `contextvars` isolates context state across async coroutines executing on single thread. |
+| 43 | "What is `memoryview`?" | "Converts bytes to string." | Exposes C-level buffer protocol for zero-copy memory slicing. |
+| 44 | "What does `:=` walrus operator do?" | "Assigns global variables." | Assignment expression: assigns value to variable within an expression context. |
+| 45 | "How to force GC run?" | `del obj` triggers full GC immediately. | `del` decrements ref count; `gc.collect()` explicitly triggers generational cyclic collector. |
+| 46 | "What is `__hash__` requirement?" | "Any object can be hashed." | Object must be immutable and its hash value must remain constant throughout lifetime. |
+| 47 | "Difference between `dict.get(k)` and `dict[k]`" | Confuses exception behavior. | `dict[k]` raises `KeyError` if key missing; `dict.get(k)` returns `None` or default sentinel. |
+| 48 | "How to re-raise exception in `except` block?" | `raise e` (losing original traceback stack). | Use bare `raise` to preserve stack trace, or `raise NewExc() from e` for explicit chaining. |
+| 49 | "What is `__call__` dunder method?" | "Calls superclass method." | Allows instance of a class to be invoked like a function (`obj()`). |
+| 50 | "How to break out of nested loops?" | Using `break` expecting it to break all outer loops. | `break` only breaks innermost loop. Use flag variable, helper function return, or `for/else`. |
 
 ---
 
-### 4. Custom Async Task Retry Engine with Backoff
-- **Commonly Asked By**: Spotify, Uber, Swiggy, Zomato
-- **Why This Question Matters**: Tests understanding of `asyncio` coroutines, task scheduling, exception handling, and non-blocking sleep.
-- **Problem Scenario**: Write an `async def async_retry(...)` wrapper that retries an async callable with exponential backoff and randomized jitter.
+## 🏢 Company-Inspired Question Bank & Architecture Scenarios
 
-```python
-import asyncio
-import random
-import logging
-from typing import Callable, Any
+### 1. High-Concurrency Rate Limiter Decorator (Netflix, Uber, Stripe, Razorpay)
+- **Problem Scenario**: Design a decorator `@rate_limit(max_calls=10, period=1.0)` restricting function calls to at most $N$ executions per time window.
+- **Implementation**:
+  ```python
+  import time, threading
+  from functools import wraps
 
-async def async_retry(
-    coro_func: Callable[..., Any],
-    *args,
-    max_retries: int = 3,
-    base_delay: float = 1.0,
-    **kwargs
-) -> Any:
-    for attempt in range(1, max_retries + 1):
-        try:
-            return await coro_func(*args, **kwargs)
-        except Exception as exc:
-            if attempt == max_retries:
-                raise exc
-            jitter = random.uniform(0, 0.5)
-            delay = (base_delay * (2 ** (attempt - 1))) + jitter
-            logging.warning(f"Attempt {attempt} failed ({exc}). Retrying in {delay:.2f}s...")
-            await asyncio.sleep(delay) # NON-BLOCKING sleep!
-```
+  class RateLimitExceeded(Exception): pass
 
-- **Expected Answer & Follow-up Questions**:
-  1. *Follow-up*: Why must you use `await asyncio.sleep(delay)` instead of `time.sleep(delay)`? *(Because `time.sleep` blocks the entire single-threaded asyncio event loop, freezing all concurrent coroutines!)*.
+  def rate_limit(max_calls: int, period: float):
+      def decorator(func):
+          calls = []
+          lock = threading.Lock()
+          @wraps(func)
+          def wrapper(*args, **kwargs):
+              nonlocal calls
+              with lock:
+                  now = time.perf_counter()
+                  calls = [t for t in calls if now - t < period]
+                  if len(calls) >= max_calls:
+                      raise RateLimitExceeded(f"Rate limit of {max_calls} calls/{period}s exceeded")
+                  calls.append(now)
+              return func(*args, **kwargs)
+          return wrapper
+      return decorator
+  ```
 
----
+### 2. Thread-Safe Connection Pool (Amazon, Microsoft, Databricks)
+- **Problem Scenario**: Implement a `ConnectionPool` limiting open sockets using `queue.Queue` and context managers.
 
-### 5. ORM-Style Field Descriptor with Type & Range Validation
-- **Commonly Asked By**: Adobe, Microsoft, Apple, Swiggy
-- **Why This Question Matters**: Evaluates metaprogramming mastery, descriptor protocols (`__set_name__`, `__get__`, `__set__`), and clean class architectures.
+### 3. Zero-Copy Binary File Stream Aggregator (Google, Nvidia, Meta)
+- **Problem Scenario**: Parse gigabyte binary files using `struct` and `memoryview` without loading file into RAM.
 
-```python
-class BoundedInteger:
-    def __init__(self, min_val: int, max_val: int):
-        self.min_val = min_val
-        self.max_val = max_val
+### 4. Async Task Retry Engine with Jitter (Spotify, Swiggy, Zomato)
+- **Problem Scenario**: Exponential backoff retry engine for async coroutines using non-blocking `asyncio.sleep`.
 
-    def __set_name__(self, owner, name):
-        self.private_name = f"_{name}"
-
-    def __get__(self, instance, owner):
-        if instance is None:
-            return self
-        return getattr(instance, self.private_name, self.min_val)
-
-    def __set__(self, instance, value):
-        if not isinstance(value, int):
-            raise TypeError(f"{self.private_name[1:]} must be an integer.")
-        if not (self.min_val <= value <= self.max_val):
-            raise ValueError(f"Value {value} out of bounds [{self.min_val}, {self.max_val}]")
-        setattr(instance, self.private_name, value)
-
-class ProductInventory:
-    quantity = BoundedInteger(min_val=0, max_val=10_000)
-    price = BoundedInteger(min_val=1, max_val=1_000_000)
-```
+### 5. Bounded Integer Field Descriptor (Adobe, Apple, Microsoft)
+- **Problem Scenario**: Descriptor validating min/max bounds and type enforcement on class attributes.

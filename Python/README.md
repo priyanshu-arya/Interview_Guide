@@ -1,46 +1,47 @@
 # 🐍 Python Interview Preparation Guide (2026–2027)
 
-Welcome to the definitive, production-grade Python Interview Preparation repository. Curated by senior engineers, staff architects, and technical interviewers from top product companies (FAANG, FinTech, Unicorns, and AI Infrastructure labs), this guide prepares software engineers (SDE-1 to Staff+), backend developers, data engineers, and AI practitioners for modern Python technical interviews.
+Welcome to the ultimate, production-grade **Python Interview Preparation Guide**. Curated by senior engineers, staff architects, and technical interviewers from top product companies (FAANG, FinTech, Unicorns, and AI Infrastructure labs), this repository prepares software engineers (SDE-1 to Staff+), backend developers, data engineers, and AI/ML practitioners for modern Python technical interviews.
 
 ---
 
-## 📌 Subject Overview
+## 📌 Subject Overview & 2026–2027 Trends
 
 Python in 2026–2027 is far more than a rapid prototyping or scripting language. It serves as the primary backend architecture for high-scale platforms (Instagram, Spotify, Stripe, Dropbox, Netflix), the foundational interface for modern Machine Learning and AI infrastructure (PyTorch, Hugging Face, vLLM, LangChain), and a primary tool for Data Engineering and DevOps automation.
 
-Modern technical interviews evaluate Python candidates not just on syntax, but on **deep language internals**, **CPython memory management**, **concurrency models (GIL vs multiprocessing vs asyncio)**, **data model (`__dunder__` execution)**, **type hinting (PEP 484/585)**, and **production performance profiling**.
+Modern technical interviews evaluate Python candidates not just on syntax, but on **deep CPython language internals**, **memory management (PyObject, reference counting, generational GC)**, **concurrency models (GIL vs multiprocessing vs asyncio)**, **data model (`__dunder__` execution)**, **type hinting (PEP 484/585/695)**, and **production performance profiling**.
 
 ---
 
-## 🎯 Why Companies Ask Python
+## 🗺️ Master Index of All 20 Guide Sections
 
-1. **Object Model & Internals Mastery**: Python's dynamic object model relies on reference counting, type objects, descriptors, and dynamic method resolution. Candidates who understand `__dunder__` protocols and memory layout write safer, faster code.
-2. **Concurrency & Execution Mechanics**: Understanding the Global Interpreter Lock (GIL), non-blocking event loops (`asyncio`), and process isolation is critical for scaling backend microservices and data pipelines.
-3. **Pythonic & Functional Idioms**: Iterators, generators, decorators, and context managers enable clean abstractions, zero-copy operations, and memory-efficient streaming.
-4. **Modern Production Standards**: Production code in 2026+ demands strict static typing (`mypy`), structured error handling, memory profiling, and high-performance C-extensions or zero-copy buffer views (`memoryview`).
+Every topic and section from the prep syllabus is mapped across the 7 files in this folder:
+
+| Section | Topic Title | Target File |
+|---------|-------------|-------------|
+| **1** | [Trends & Mindset for Python Interviews (2026–2027)](file:///s:/Interview_Guide/Python/Interview_Guide.md#trends--mindset-for-python-interviews-20262027) | `Interview_Guide.md` |
+| **2** | [Top 25 Most Repeated Questions](file:///s:/Interview_Guide/Python/Top_Questions.md#top-25-most-repeated-questions) | `Top_Questions.md` |
+| **3** | [Top 50 Most Difficult Questions](file:///s:/Interview_Guide/Python/Top_Questions.md#top-50-most-difficult-questions) | `Top_Questions.md` |
+| **4** | [Top 50 Most Tricky Questions](file:///s:/Interview_Guide/Python/Practice_Questions.md#7-output-prediction-questions-50) | `Practice_Questions.md` |
+| **5** | [Top 50 Must-Know Questions](file:///s:/Interview_Guide/Python/Top_Questions.md#top-50-must-know-questions) | `Top_Questions.md` |
+| **6** | [Top 50 Frequently Rejected Questions](file:///s:/Interview_Guide/Python/Company_Questions.md#top-50-frequently-rejected-questions) | `Company_Questions.md` |
+| **7** | [Top 50 Questions That Differentiate Top Candidates](file:///s:/Interview_Guide/Python/Top_Questions.md#top-50-differentiating-questions) | `Top_Questions.md` |
+| **8** | [Theory Questions (150+)](file:///s:/Interview_Guide/Python/Practice_Questions.md#1-theory-questions-150) | `Practice_Questions.md` |
+| **9** | [Coding Questions (100+)](file:///s:/Interview_Guide/Python/Practice_Questions.md#2-coding-questions-100) | `Practice_Questions.md` |
+| **10** | [MCQs (100+)](file:///s:/Interview_Guide/Python/Practice_Questions.md#3-multiple-choice-questions-100) | `Practice_Questions.md` |
+| **11** | [Scenario Questions (75+)](file:///s:/Interview_Guide/Python/Practice_Questions.md#4-scenario-questions-75) | `Practice_Questions.md` |
+| **12** | [Production Problems (50+)](file:///s:/Interview_Guide/Python/Practice_Questions.md#5-production-problems-50) | `Practice_Questions.md` |
+| **13** | [Debugging Problems (50+)](file:///s:/Interview_Guide/Python/Practice_Questions.md#6-debugging-problems-50) | `Practice_Questions.md` |
+| **14** | [Output Prediction Questions (50+)](file:///s:/Interview_Guide/Python/Practice_Questions.md#7-output-prediction-questions-50) | `Practice_Questions.md` |
+| **15** | [Best Practices Questions (50+)](file:///s:/Interview_Guide/Python/Practice_Questions.md#8-best-practices-questions-50) | `Practice_Questions.md` |
+| **16** | [Optimization Questions (50+)](file:///s:/Interview_Guide/Python/Practice_Questions.md#9-optimization-questions-50) | `Practice_Questions.md` |
+| **17** | [Advanced Questions (50+)](file:///s:/Interview_Guide/Python/Practice_Questions.md#10-advanced-questions-50) | `Practice_Questions.md` |
+| **18** | [Cheat Sheets & Quick Revision](file:///s:/Interview_Guide/Python/Cheat_Sheet.md) | `Cheat_Sheet.md` |
+| **19** | [Mermaid Architecture Diagrams](file:///s:/Interview_Guide/Python/Cheat_Sheet.md#10-mermaid-architecture-diagrams) | `Cheat_Sheet.md` |
+| **20** | [Interview Day Strategy](file:///s:/Interview_Guide/Python/Interview_Guide.md#interview-day-strategy) | `Interview_Guide.md` |
 
 ---
 
-## 🚀 Interview Importance
-
-Across engineering disciplines, Python knowledge is assessed in distinct interview stages:
-- **Coding & Data Structures Rounds**: Evaluating clean, pythonic implementations, proper data structure selection (`deque`, `heapq`, `dict`), and time/space efficiency.
-- **Python Deep-Dive Rounds**: Probing language mechanics (GIL workarounds, memory leaks, metaclasses, custom decorators, descriptor protocol).
-- **System Design & Backend Architecture Rounds**: Designing async event-driven systems, REST/gRPC microservices, background job workers, and database ORM tuning.
-- **AI / Data Engineering Infrastructure Rounds**: Memory-mapped I/O, vectorization, zero-copy buffer sharing, and parallel CPU bound execution.
-
----
-
-## 🛠️ Prerequisites
-
-Before tackling advanced Python interview topics, ensure you understand:
-- Basic programming paradigms (procedural, functional, object-oriented).
-- Operating System basics (CPU vs I/O bound tasks, process memory layouts, virtual memory, threads vs processes).
-- Fundamental data structures (arrays, hash tables, linked lists, binary trees, graphs).
-
----
-
-## 🗺️ Learning Roadmap
+## 🛠️ Learning Roadmap
 
 ```mermaid
 graph TD
@@ -97,19 +98,10 @@ graph TD
 
 ## 📖 Recommended Study Order
 
-To maximize interview retention and practical mastery, follow this order:
-
-1. **[Interview_Guide.md](file:///s:/Interview_Guide/Python/Interview_Guide.md)**: Conceptual breakdown structured by experience level (Beginner → Intermediate → Advanced).
-2. **[Cheat_Sheet.md](file:///s:/Interview_Guide/Python/Cheat_Sheet.md)**: Keep open for rapid revision of dunder methods, syntax, memory tricks, and comparison matrices.
-3. **[Top_Questions.md](file:///s:/Interview_Guide/Python/Top_Questions.md)**: Master 45+ highly repeated technical interview questions with complete solutions and follow-ups.
-4. **[Company_Questions.md](file:///s:/Interview_Guide/Python/Company_Questions.md)**: Study real-world questions categorized by hiring patterns at FAANG, Unicorns, and FinTech.
-5. **[Practice_Questions.md](file:///s:/Interview_Guide/Python/Practice_Questions.md)**: Test your skills across 8 problem categories (coding, debugging, output prediction, scenarios).
-6. **[Resources.md](file:///s:/Interview_Guide/Python/Resources.md)**: Deepen your understanding with top books, official PEP documentation, and interactive practice platforms.
-
----
-
-## 📂 How to Use This Folder
-
-- **Daily Practice**: Resolve 3–5 questions daily from [Practice_Questions.md](file:///s:/Interview_Guide/Python/Practice_Questions.md) and verify your solution against [Top_Questions.md](file:///s:/Interview_Guide/Python/Top_Questions.md).
-- **Pre-Interview Revision**: Spend 15 minutes reviewing [Cheat_Sheet.md](file:///s:/Interview_Guide/Python/Cheat_Sheet.md) before your interview call.
-- **Architectural Refresh**: Study the Advanced section in [Interview_Guide.md](file:///s:/Interview_Guide/Python/Interview_Guide.md) for Senior/Staff design rounds.
+1. **[README.md](file:///s:/Interview_Guide/Python/README.md)**: Overview & Master Index.
+2. **[Interview_Guide.md](file:///s:/Interview_Guide/Python/Interview_Guide.md)**: 2026–2027 Trends, Tiered conceptual guide (Beginner $\rightarrow$ Intermediate $\rightarrow$ Advanced), and 10-step Interview Day Strategy.
+3. **[Cheat_Sheet.md](file:///s:/Interview_Guide/Python/Cheat_Sheet.md)**: High-density revision tables, dunders, complexities, standard library power tools, modern syntax, memory tricks, and Mermaid diagrams.
+4. **[Top_Questions.md](file:///s:/Interview_Guide/Python/Top_Questions.md)**: Top 25 Most Repeated, Top 50 Most Difficult, Top 50 Must-Know, and Top 50 Differentiating questions.
+5. **[Company_Questions.md](file:///s:/Interview_Guide/Python/Company_Questions.md)**: Top 50 Frequently Rejected Questions and Company-Inspired Architecture Scenarios.
+6. **[Practice_Questions.md](file:///s:/Interview_Guide/Python/Practice_Questions.md)**: 150+ Theory, 100+ Coding, 100+ MCQs, 75+ Scenarios, 50+ Production, 50+ Debugging, 50+ Output Prediction, 50+ Best Practices, 50+ Optimization, and 50+ Advanced Questions.
+7. **[Resources.md](file:///s:/Interview_Guide/Python/Resources.md)**: Books, Official Docs, PEPs, YouTube Channels, and Practice Platforms.

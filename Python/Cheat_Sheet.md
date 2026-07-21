@@ -243,7 +243,62 @@ except ValueError as e:
 
 ---
 
-## ⚡ 9. LEGB Scope Resolution Summary
+## 📊 10. Mermaid Architecture Diagrams
+
+### Diagram A: Python Bytecode Compilation & Memory Lifecycle
+```mermaid
+graph TD
+    A[Python Source Code .py] -->|compile| B[Bytecode .pyc]
+    B -->|PVM Interpreter| C[Object Allocation]
+    C --> D{Object Mutability}
+    D -->|int, float, str, tuple| E[Immutable Object]
+    D -->|list, dict, set| F[Mutable Object]
+    E --> G[PyObject Memory Heap]
+    F --> G
+    G -->|refcnt == 0| H[Immediate Deallocation]
+    G -->|refcnt > 0 & cycle| I[Generational Cyclic GC]
+```
+
+### Diagram B: Global Interpreter Lock (GIL) Execution Model
+```mermaid
+graph TD
+    subgraph CPython GIL Mutex
+        T1[Native Thread 1] -->|Acquires Lock| GIL[GIL Mutex]
+        T2[Native Thread 2] -->|Blocked Waiting| GIL
+        T3[Native Thread 3] -->|Blocked Waiting| GIL
+        GIL -->|I/O System Call / Timeout| Release[Release GIL]
+        Release -->|Next Thread Acquires| T2
+    end
+```
+
+### Diagram C: Class & Metaclass Object Hierarchy
+```mermaid
+classDiagram
+    class object {
+        +__hash__()
+        +__eq__()
+        +__repr__()
+    }
+    class type {
+        +__call__()
+        +__new__()
+    }
+    class Meta {
+        +__new__()
+        +__init__()
+    }
+    class UserClass {
+        +__init__()
+    }
+
+    object <|-- type
+    type <|-- Meta
+    Meta <|-- UserClass
+```
+
+---
+
+## ⚡ 11. LEGB Scope Resolution Summary
 
 ```
 +------------------------------------+
@@ -260,4 +315,5 @@ except ValueError as e:
 +------------------------------------+
 ```
 *Variables marked `global x` bind to GLOBAL scope. Variables marked `nonlocal x` bind to nearest ENCLOSING scope.*
+
 
