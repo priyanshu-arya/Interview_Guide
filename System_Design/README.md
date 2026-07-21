@@ -50,10 +50,11 @@ flowchart TD
 1. README.md              -> Overview, trends, testing matrix & roadmap (This File)
 2. Interview_Guide.md     -> 3-Tier Deep Dive (Beginner, Intermediate, Advanced)
 3. Cheat_Sheet.md         -> Quick revision tables, Mermaid diagrams & Day Strategy
-4. Top_Questions.md       -> Top 25 Repeated, Top 50 Difficult, Top 50 Rejected, Top 50 Differentiating
-5. Company_Questions.md   -> FAANG, FinTech, & Unicorn company-specific hiring patterns
-6. Practice_Questions.md  -> 100+ Mini-Problems, 100+ MCQs, 75+ Scenarios, 50+ Production Bugs, 50+ Debugging
-7. Resources.md           -> Handpicked books, MIT 6.824 lectures, whitepapers & playgrounds
+4. Tools_Matrix.md        -> Tool selection matrix (Redis, Kafka, Postgres, Cassandra, Flink, ClickHouse, etc.)
+5. Top_Questions.md       -> Top 25 Repeated, Top 50 Difficult, Top 50 Rejected, Top 50 Differentiating
+6. Company_Questions.md   -> FAANG, FinTech, & Unicorn company-specific hiring patterns
+7. Practice_Questions.md  -> 100+ Mini-Problems, 100+ MCQs, 75+ Scenarios, 50+ Production Bugs, 50+ Debugging
+8. Resources.md           -> Handpicked books, MIT 6.824 lectures, whitepapers & playgrounds
 ```
 
 ---
@@ -62,7 +63,7 @@ flowchart TD
 
 | Preparation Track | Target Role Level | Estimated Time | Focus Strategy |
 | :--- | :--- | :--- | :--- |
-| **Express Revision** | Revision before interview | **8–12 Hours** | Read [`Cheat_Sheet.md`](file:///s:/Interview_Guide/System_Design/Cheat_Sheet.md), review [`Top_Questions.md`](file:///s:/Interview_Guide/System_Design/Top_Questions.md), scan [`Company_Questions.md`](file:///s:/Interview_Guide/System_Design/Company_Questions.md). |
+| **Express Revision** | Revision before interview | **8–12 Hours** | Read [`Cheat_Sheet.md`](file:///s:/Interview_Guide/System_Design/Cheat_Sheet.md), review [`Tools_Matrix.md`](file:///s:/Interview_Guide/System_Design/Tools_Matrix.md), scan [`Top_Questions.md`](file:///s:/Interview_Guide/System_Design/Top_Questions.md). |
 | **Standard Prep** | SDE-1 / SDE-2 | **3–4 Weeks** | Master [`Interview_Guide.md`](file:///s:/Interview_Guide/System_Design/Interview_Guide.md), solve [`Top_Questions.md`](file:///s:/Interview_Guide/System_Design/Top_Questions.md) & [`Practice_Questions.md`](file:///s:/Interview_Guide/System_Design/Practice_Questions.md). |
 | **Deep Architecture** | Senior / Staff Engineer | **6–8 Weeks** | Master Advanced [`Interview_Guide.md`](file:///s:/Interview_Guide/System_Design/Interview_Guide.md), LSM vs B-Tree, Distributed DBs, DDIA & whitepaper concepts. |
 
@@ -75,6 +76,7 @@ System_Design/
 ├── README.md              # Subject overview, trends, testing matrix, roadmap (This file)
 ├── Interview_Guide.md     # 3-tier deep dive (Beginner, Intermediate, Advanced)
 ├── Cheat_Sheet.md         # RESHADED framework, rapid revision tables, Mermaid diagrams, Day strategy
+├── Tools_Matrix.md        # Master technology selection matrix (Redis, Kafka, Flink, Postgres, S3, etc.)
 ├── Top_Questions.md       # Top 25 Repeated, Top 50 Difficult, Top 50 Rejected, Top 50 Differentiating
 ├── Company_Questions.md   # Curated patterns from Google, Amazon, Meta, Uber, Netflix, Stripe, etc.
 ├── Practice_Questions.md  # 100+ Mini-Problems, 100+ MCQs, 75+ Scenarios, 50+ Production, 50+ Debugging
