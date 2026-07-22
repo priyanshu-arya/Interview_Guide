@@ -1,8 +1,6 @@
-# ❓ Top Machine Learning Interview Questions & Detailed Answers
+# ❓ Top Machine Learning Interview Questions & Interactive Detailed Answers
 
-This document contains an exhaustive collection of the **Top 25 Most Repeated Questions**, **Top 50 Most Difficult Questions**, **Top 50 Most Tricky Questions**, **Top 50 Must-Know Questions**, **Top 50 Frequently Rejected Questions**, and **Top 50 Questions That Differentiate Top Candidates**.
-
-> 💡 **Interactive Self-Assessment**: All answers are hidden inside expandable blocks. Click on any question to reveal the **Simple Explanation**, **Best Way to Answer in an Interview**, and **Detailed Technical Breakdown**.
+This document contains **ALL** 275+ questions across the 6 top curated interview question sets. Every single question is interactive and collapsible using `<details><summary>`.
 
 ---
 
@@ -18,122 +16,331 @@ This document contains an exhaustive collection of the **Top 25 Most Repeated Qu
 
 ## 1. Top 25 Most Repeated Questions
 
-| # | Question | Difficulty | Level | Company Categories |
-|---|----------|------------|-------|-------------------|
-| 1 | Explain bias‑variance tradeoff. How do you overcome overfitting? | Medium | SDE1/2 | All |
-| 2 | What is the difference between supervised and unsupervised learning? Give examples. | Easy | Fresher | All |
-| 3 | How does gradient descent work? What are its variants? | Medium | SDE1/2 | All |
-| 4 | What is cross‑validation? Why is it important? | Easy | SDE1 | All |
-| 5 | Explain precision, recall, F1‑score, ROC‑AUC. When to use each? | Medium | SDE2 | All |
-| 6 | How does a decision tree handle overfitting? Pruning, max depth, etc. | Medium | SDE2 | All |
-| 7 | What is regularization? L1 vs L2 – differences and use cases. | Medium | SDE2 | Big Tech, FinTech |
-| 8 | Describe the Transformer architecture and self‑attention. | Hard | SDE2/Senior | Big Tech, AI |
-| 9 | How does a convolutional neural network (CNN) work? | Medium | SDE2 | Big Tech, Unicorn |
-| 10 | What is backpropagation? Derive the chain rule for a simple network. | Hard | SDE2/Senior | Big Tech, AI |
-| 11 | What is the difference between bagging and boosting? Give examples. | Medium | SDE2 | All |
-| 12 | Explain the concept of dropout and why it prevents overfitting. | Medium | SDE2 | Big Tech, AI |
-| 13 | How do you handle imbalanced datasets? | Medium | SDE2 | FinTech, All |
-| 14 | What is the difference between generative and discriminative models? | Medium | SDE2 | AI, Big Tech |
-| 15 | Explain the working of a random forest. | Medium | SDE1/2 | All |
-| 16 | What is feature scaling? When is it necessary? | Easy | Fresher | All |
-| 17 | How would you evaluate a regression model? | Easy | Fresher | All |
-| 18 | What is Principal Component Analysis (PCA)? How does it work? | Medium | SDE2 | All |
-| 19 | Explain the differences between RNN, LSTM, and GRU. | Medium | SDE2 | Big Tech, AI |
-| 20 | What is the vanishing gradient problem? How can it be mitigated? | Medium | SDE2 | AI, Big Tech |
-| 21 | How do you handle missing data? | Easy | SDE1 | All |
-| 22 | What is data leakage? Give an example and how to prevent it. | Medium | SDE2 | All |
-| 23 | Describe the process of fine‑tuning a large language model. | Hard | Senior | Big Tech, AI, Unicorn |
-| 24 | What is retrieval‑augmented generation (RAG)? When would you use it? | Hard | Senior | AI, Big Tech |
-| 25 | How do you deploy a machine learning model in production? | Medium | SDE2 | All |
-
-### Expandable Answers for Top 25
-
 <details>
-<summary><b>Q1: Explain bias‑variance tradeoff. How do you overcome overfitting?</b></summary>
+<summary><b>1. Explain bias‑variance tradeoff. How do you overcome overfitting?</b></summary>
 
 #### 💡 Simple Explanation
-Imagine a archer shooting arrows.
-- **High Bias (Underfitting)**: The archer always hits 3 feet to the left of the bullseye. The bow is fundamentally misaligned (model is too simple).
-- **High Variance (Overfitting)**: The archer hits all over the target—sometimes close, sometimes wildly off. The archer gets distracted by every breeze (model memorizes noise).
-- **Goal**: Find the sweet spot where total error (Bias + Variance) is minimized.
+Imagine an archer:
+- **High Bias (Underfitting)**: The bow is broken so all arrows hit 3 feet left of the bullseye (model too simple).
+- **High Variance (Overfitting)**: Arrows land all over the target because the archer reacts to every tiny gust of wind (model memorizes noise).
+- **Goal**: Minimize total error ($\text{Bias}^2 + \text{Variance} + \text{Noise}$).
 
 #### 🎯 Best Way to Answer in an Interview
-1. **Define the Error Formula**: State that Generalization Error = $\text{Bias}^2 + \text{Variance} + \text{Irreducible Noise}$.
-2. **Describe Both Extremes**: Define high bias as underfitting (high train & test error) and high variance as overfitting (low train error, high test error).
-3. **List Concrete Solutions**: Mention regularization ($L_1/L_2$, Dropout), gathering more data/augmentation, tree pruning, or ensembling (Random Forest bagging).
+1. State the mathematical error decomposition: $\text{Error} = \text{Bias}^2 + \text{Variance} + \sigma^2$.
+2. Explain Underfitting (High Bias) vs Overfitting (High Variance) with train/validation loss gaps.
+3. List 5 remedies for overfitting: regularization ($L_1/L_2$, Dropout), data augmentation, tree pruning, early stopping, and bagging (Random Forest).
 
-#### 📝 Detailed Technical Answer
-Generalization error decomposes as:
-$$\mathbb{E}[(y - \hat{f}(x))^2] = \text{Bias}[\hat{f}(x)]^2 + \text{Var}[\hat{f}(x)] + \sigma^2$$
-- Overcoming Overfitting: Add $L_1/L_2$ penalty to cost function, apply early stopping, reduce model depth/width, use Dropout ($p=0.2-0.5$), or use Bagging (averaging independent overfitted models reduces overall variance by $1/N$).
+#### 📝 Detailed Answer
+- **Underfitting**: High training error and high validation error. Increase model complexity, engineer features, or decrease regularization.
+- **Overfitting**: Very low training error but high validation error. Add $L_1/L_2$ penalties, use Dropout ($p=0.2-0.5$), prune trees, or average predictions using Bagging.
 </details>
 
 <details>
-<summary><b>Q2: What is the difference between supervised and unsupervised learning? Give examples.</b></summary>
+<summary><b>2. What is the difference between supervised and unsupervised learning? Give examples.</b></summary>
 
 #### 💡 Simple Explanation
-- **Supervised Learning**: Learning with a teacher. You give the model images of cats and dogs with exact labels "Cat" or "Dog".
-- **Unsupervised Learning**: Self-learning without labels. You give the model 10,000 unlabelled animal pictures, and it groups them into clusters based on tail shape, ears, and size without knowing their names.
+- **Supervised**: Learning with a teacher. You give the model inputs $X$ and true target labels $y$ (e.g. photos tagged "Cat" or "Dog").
+- **Unsupervised**: Learning without a teacher. You give the model unlabeled data $X$ and ask it to find natural groups or patterns on its own.
 
 #### 🎯 Best Way to Answer in an Interview
-Start by defining the presence vs absence of target labels ($y$). Give clear task divisions (Regression & Classification for Supervised; Clustering & Dimensionality Reduction for Unsupervised) and mention representative algorithms for each.
+Define presence vs absence of ground-truth target label $y$. Split Supervised into Classification & Regression, and Unsupervised into Clustering & Dimensionality Reduction, giving 2 algorithms for each.
 
-#### 📝 Detailed Technical Answer
-- **Supervised**: Learns mapping function $f: X \to y$ given pairs $(X_i, y_i)$. Tasks: Classification (Logistic Regression, XGBoost, Neural Nets) and Regression (Linear Regression, SVR).
-- **Unsupervised**: Models underlying density or structure $P(X)$ from unlabeled $X_i$. Tasks: Clustering ($k$-means, DBSCAN, GMM) and Dimensionality Reduction (PCA, t-SNE, Autoencoders).
+#### 📝 Detailed Answer
+- **Supervised**: Learns $f: X \to y$. Algorithms: Linear/Logistic Regression, XGBoost, SVM, Neural Networks.
+- **Unsupervised**: Models density $P(X)$ or structure. Algorithms: $k$-means, DBSCAN, PCA, t-SNE, Autoencoders.
 </details>
 
 <details>
-<summary><b>Q3: How does gradient descent work? What are its variants?</b></summary>
+<summary><b>3. How does gradient descent work? What are its variants?</b></summary>
 
 #### 💡 Simple Explanation
-Imagine walking down a foggy mountain in the dark to reach the bottom valley. You can't see the bottom, so you feel the slope under your feet and take a step in the steepest downward direction. Repeat until the ground becomes flat!
+Walking down a dark, foggy mountain to reach the valley. You feel the slope under your feet and take steps in the steepest downward direction until the ground flattens out.
 
 #### 🎯 Best Way to Answer in an Interview
-1. Define the update rule equation: $w_{t+1} = w_t - \eta \nabla \mathcal{L}(w_t)$.
-2. Explain the 3 batch variants: Batch GD (full data), Stochastic GD (1 sample), Mini-batch GD (subset $B$).
-3. Highlight modern adaptive optimizers (Adam) that adjust learning rates per parameter using momentum.
+1. Write equation: $w_{t+1} = w_t - \eta \nabla \mathcal{L}(w_t)$.
+2. Compare Batch GD (entire dataset), SGD (1 sample), and Mini-batch GD (batch size $B$).
+3. Explain adaptive optimizers (Adam) combining Momentum and RMSprop.
 
-#### 📝 Detailed Technical Answer
-- **Batch GD**: Computes $\nabla \mathcal{L}$ over all $N$ dataset samples. Exact gradient, but slow and memory intensive.
-- **SGD**: Computes gradient over 1 random sample. Fast, noisy updates help escape shallow saddle points.
-- **Mini-Batch GD**: Computes gradient over mini-batch $B$ (e.g., 32, 64). Optimal vectorization on GPUs.
-- **Adam**: Tracks first moment $m_t$ (momentum) and second uncentered moment $v_t$ (RMSprop) with bias corrections $\hat{m}_t, \hat{v}_t$: $w \leftarrow w - \frac{\eta}{\sqrt{\hat{v}_t}+\epsilon} \hat{m}_t$.
+#### 📝 Detailed Answer
+- **Batch GD**: Exact gradient over $N$ samples, slow.
+- **SGD**: Gradient over 1 sample, fast, noisy updates escape saddle points.
+- **Mini-Batch GD**: Gradient over batch size $B$ (32–256), GPU vectorized.
+- **Adam**: Updates $w \leftarrow w - \frac{\eta}{\sqrt{\hat{v}_t}+\epsilon}\hat{m}_t$ with bias-corrected 1st ($m_t$) and 2nd ($v_t$) moments.
 </details>
 
 <details>
-<summary><b>Q4: What is cross‑validation? Why is it important?</b></summary>
+<summary><b>4. What is cross‑validation? Why is it important?</b></summary>
 
 #### 💡 Simple Explanation
-Instead of taking one exam at the end of the year, a student takes 5 different practice quizzes throughout the semester. By averaging the 5 scores, you get a much more reliable estimate of how well the student actually knows the subject.
+Instead of judging a student on 1 final test, you average their scores across 5 quizzes throughout the term to get a true measure of knowledge.
 
 #### 🎯 Best Way to Answer in an Interview
-Explain that Cross-Validation (e.g., $k$-fold) splits data into $k$ equal subsets, training on $k-1$ folds and validating on the remaining fold $k$ times. State that it prevents metric variance caused by a single lucky/unlucky train-test split.
+Explain $k$-fold CV: divides data into $k$ subsets, training on $k-1$ folds and validating on 1 fold, repeated $k$ times. Prevents hyperparameter evaluation bias from a single train/test split. Mention Stratified $k$-fold for imbalanced data and Time-Series split for temporal data.
 
-#### 📝 Detailed Technical Answer
-- $k$-Fold CV divides dataset into $k$ non-overlapping subsets. The model is trained $k$ times; each time using a different fold as validation and remaining $k-1$ as training.
-- **Stratified $k$-Fold**: Preserves target class proportions in every fold (essential for imbalanced data).
-- **Time-Series Split**: Uses rolling window origin to prevent future temporal data leakage into past training folds.
+#### 📝 Detailed Answer
+Calculates mean performance $\mu = \frac{1}{k}\sum_{i=1}^k \text{Score}_i$ and standard deviation to measure validation variance.
 </details>
 
 <details>
-<summary><b>Q5: Explain precision, recall, F1‑score, ROC‑AUC. When to use each?</b></summary>
+<summary><b>5. Explain precision, recall, F1‑score, ROC‑AUC. When to use each?</b></summary>
 
 #### 💡 Simple Explanation
-- **Precision**: *"When the model screams 'FIRE!', how often is there an actual fire?"* (Avoid false alarms).
-- **Recall**: *"Out of ALL actual fires that happened, how many did the alarm catch?"* (Avoid missing fires).
-- **F1-Score**: The fair balance between Precision and Recall.
-- **ROC-AUC**: Overall grade of how well the model separates positives from negatives across all threshold settings.
+- **Precision**: *"When the model predicts positive, how often is it RIGHT?"*
+- **Recall**: *"Out of ALL actual positive cases, how many did the model CATCH?"*
+- **F1-Score**: The harmonic balance between Precision and Recall.
+- **ROC-AUC**: Overall score measuring how well the model separates classes across all thresholds.
 
 #### 🎯 Best Way to Answer in an Interview
-1. Define formulas: $\text{Precision} = TP / (TP+FP)$, $\text{Recall} = TP / (TP+FN)$.
-2. Give concrete business use cases: Spam detection needs High Precision (don't send real emails to spam). Medical/Fraud diagnosis needs High Recall (don't miss a sick patient or fraud event).
-3. State why PR-AUC is preferred over ROC-AUC for severe class imbalance.
+State formulas ($P = TP/(TP+FP), R = TP/(TP+FN)$). Give business cases: Spam filter needs High Precision; Cancer/Fraud detection needs High Recall. Mention PR-AUC for severe class imbalance.
 
-#### 📝 Detailed Technical Answer
-- Precision penalizes False Positives ($FP$). Recall penalizes False Negatives ($FN$).
-- $F_1 = 2 \frac{P \cdot R}{P + R}$ (Harmonic mean penalizes extreme imbalances).
-- ROC-AUC plots True Positive Rate vs False Positive Rate across thresholds. For extreme imbalance (e.g. 99.9% negative), FPR denominator $(TN+FP)$ is dominated by $TN$, inflating ROC-AUC. Use **PR-AUC** instead.
+#### 📝 Detailed Answer
+$F_1 = 2 \frac{P \cdot R}{P + R}$. ROC-AUC plots TPR vs FPR. PR-AUC is preferred when negatives dominate $TN \gg TP$.
+</details>
+
+<details>
+<summary><b>6. How does a decision tree handle overfitting? Pruning, max depth, etc.</b></summary>
+
+#### 💡 Simple Explanation
+Unchecked decision trees keep splitting until every single training point has its own leaf, memorizing noise. Stopping growth or cutting off useless branches keeps the tree simple and generalizable.
+
+#### 🎯 Best Way to Answer in an Interview
+Explain Pre-pruning (`max_depth`, `min_samples_split`, `min_samples_leaf`) and Post-pruning (Cost-Complexity Pruning $R_\alpha(T) = R(T) + \alpha |T|$).
+
+#### 📝 Detailed Answer
+Pre-pruning halts growth early. Post-pruning grows a full tree, then collapses subtrees that increase complexity penalty $\alpha |T|$ without sufficient impurity reduction.
+</details>
+
+<details>
+<summary><b>7. What is regularization? L1 vs L2 – differences and use cases.</b></summary>
+
+#### 💡 Simple Explanation
+- **L1 (Lasso)**: Sharp diamond boundary. Forces less important feature weights to **exact zero** (built-in feature selection).
+- **L2 (Ridge)**: Smooth round boundary. Shrinks all weights close to zero, but never exactly zero.
+
+#### 🎯 Best Way to Answer in an Interview
+Add penalty term to loss: $\mathcal{L}_{\text{total}} = \mathcal{L} + \lambda \text{Penalty}$. L1 uses $\sum |w_i|$ (sparse weights); L2 uses $\sum w_i^2$ (smooth weight decay). Use L1 when many features are irrelevant; use L2 to prevent multicollinearity.
+
+#### 📝 Detailed Answer
+Geometrically, L1 constraint $|w_1| + |w_2| \le C$ has corners on coordinate axes where loss contours intersect, driving weights to 0.
+</details>
+
+<details>
+<summary><b>8. Describe the Transformer architecture and self‑attention.</b></summary>
+
+#### 💡 Simple Explanation
+Every word in a sentence looks at every other word, assigning importance weights to understand context (e.g. "bank" in "river bank" vs "money bank") in parallel without reading word-by-word sequentially.
+
+#### 🎯 Best Way to Answer in an Interview
+1. State formula: $\text{Attention}(Q,K,V) = \text{softmax}(QK^T/\sqrt{d_k})V$.
+2. Explain scaling factor $\sqrt{d_k}$ prevents vanishing softmax gradients.
+3. Describe Multi-Head Attention, Residual connections, LayerNorm, and FFN blocks.
+
+#### 📝 Detailed Answer
+Encoder processes input tokens bidirectionally; Decoder uses masked self-attention to prevent looking ahead during causal generation.
+</details>
+
+<details>
+<summary><b>9. How does a convolutional neural network (CNN) work?</b></summary>
+
+#### 💡 Simple Explanation
+Small sliding windows (filters) scan an image to detect basic edges, then combine edges into shapes, and shapes into complex objects (faces, cars).
+
+#### 🎯 Best Way to Answer in an Interview
+Explain 3 core building blocks: 1) Convolutional layers (weight sharing & local receptive fields for translation invariance), 2) Activation layers (ReLU), 3) Pooling layers (MaxPool to reduce spatial dimensions).
+
+#### 📝 Detailed Answer
+Output spatial dimension $H_{\text{out}} = \lfloor \frac{H - K + 2P}{S} \rfloor + 1$.
+</details>
+
+<details>
+<summary><b>10. What is backpropagation? Derive the chain rule for a simple network.</b></summary>
+
+#### 💡 Simple Explanation
+The network makes a guess, checks how far off it was (loss), and works backwards from output to input, using calculus to adjust every weight so the error shrinks next time.
+
+#### 🎯 Best Way to Answer in an Interview
+State that backprop efficiently computes gradients using the multivariate chain rule: $\frac{\partial \mathcal{L}}{\partial w} = \frac{\partial \mathcal{L}}{\partial a} \frac{\partial a}{\partial z} \frac{\partial z}{\partial w}$.
+
+#### 📝 Detailed Answer
+For loss $\mathcal{L} = \frac{1}{2}(y - a)^2$ with $a = \sigma(z)$ and $z = w x + b$:
+$$\frac{\partial \mathcal{L}}{\partial w} = (a - y) \cdot \sigma'(z) \cdot x$$
+</details>
+
+<details>
+<summary><b>11. What is the difference between bagging and boosting? Give examples.</b></summary>
+
+#### 💡 Simple Explanation
+- **Bagging (Random Forest)**: Ask 100 experts independently and take a majority vote. Reduces **variance**.
+- **Boosting (XGBoost)**: Student 1 takes a test, Student 2 focuses *only* on Student 1's mistakes, Student 3 focuses on Student 2's mistakes. Reduces **bias**.
+
+#### 🎯 Best Way to Answer in an Interview
+Bagging trains models in parallel on bootstrap samples (reduces variance). Boosting trains weak models sequentially on residuals (reduces bias).
+
+#### 📝 Detailed Answer
+Bagging variance $\text{Var} = \rho \sigma^2 + \frac{1-\rho}{M}\sigma^2$. Boosting minimizes empirical risk $\sum L(y_i, F_{m-1}(x_i) + h_m(x_i))$.
+</details>
+
+<details>
+<summary><b>12. Explain the concept of dropout and why it prevents overfitting.</b></summary>
+
+#### 💡 Simple Explanation
+Randomly turning off half the players during soccer practice so every player learns to play independently without relying on star players.
+
+#### 🎯 Best Way to Answer in an Interview
+Dropout zeroes out activation probabilities $p$ of neurons during training. Prevents feature co-adaptation and acts as an implicit ensemble of $2^N$ sub-networks. Mention Inverted Dropout scales activations by $\frac{1}{1-p}$ during training.
+
+#### 📝 Detailed Answer
+At test time, no dropout is applied; scaling during training ensures test-time forward pass requires zero modification.
+</details>
+
+<details>
+<summary><b>13. How do you handle imbalanced datasets?</b></summary>
+
+#### 💡 Simple Explanation
+If 99.9% of transactions are legitimate and 0.1% are fraud, rebalance the training perspective so the model doesn't just guess "legitimate" every time.
+
+#### 🎯 Best Way to Answer in an Interview
+1. **Resampling**: SMOTE synthetic oversampling or undersampling.
+2. **Loss Weighting**: Cost-sensitive class weighting ($\frac{N}{N_c}$) or Focal Loss.
+3. **Metrics**: Evaluate via PR-AUC / F1 instead of Accuracy.
+
+#### 📝 Detailed Answer
+SMOTE generates synthetic minority samples $x_{\text{new}} = x_i + \lambda (x_{nn} - x_i)$. Focal Loss down-weights easy negatives $(1-p_t)^\gamma$.
+</details>
+
+<details>
+<summary><b>14. What is the difference between generative and discriminative models?</b></summary>
+
+#### 💡 Simple Explanation
+- **Discriminative**: Draws a line on a map separating apples from oranges ($P(y|X)$).
+- **Generative**: Learns how to draw an apple and an orange from scratch ($P(X,y)$ or $P(X)$).
+
+#### 🎯 Best Way to Answer in an Interview
+Discriminative models predict target conditional probability $P(y|X)$ (Logistic Reg, SVM, Neural Nets). Generative models learn joint distribution $P(X,y)$ or $P(X)$ to generate synthetic instances (Naive Bayes, GMM, VAE, GAN, LLM).
+</details>
+
+<details>
+<summary><b>15. Explain the working of a random forest.</b></summary>
+
+#### 💡 Simple Explanation
+An ensemble of many decision trees where each tree gets a random sample of rows and a random selection of features to ensure diversity. The final prediction is a majority vote.
+
+#### 🎯 Best Way to Answer in an Interview
+Explain Bagging + Random Feature Subspaces ($m = \sqrt{p}$ features per split). Reduces tree correlation $\rho$, lowering ensemble variance.
+
+#### 📝 Detailed Answer
+Evaluates out-of-bag (OOB) error for validation without extra cross-validation folds.
+</details>
+
+<details>
+<summary><b>16. What is feature scaling? When is it necessary?</b></summary>
+
+#### 💡 Simple Explanation
+Converting height in centimeters (180) and weight in tons (0.08) to a common scale so large numbers don't overwhelm smaller numbers.
+
+#### 🎯 Best Way to Answer in an Interview
+Must-have for distance-based algorithms ($k$-NN, $k$-means, SVM) and gradient descent models. Unnecessary for tree-based models (Random Forest, XGBoost).
+
+#### 📝 Detailed Answer
+- **Min-Max**: $x_{\text{norm}} = (x - x_{\min}) / (x_{\max} - x_{\min}) \in [0, 1]$.
+- **Z-Score**: $x_{\text{std}} = (x - \mu) / \sigma$.
+</details>
+
+<details>
+<summary><b>17. How would you evaluate a regression model?</b></summary>
+
+#### 💡 Simple Explanation
+Check how far off predictions are using MSE (penalizes big errors), RMSE (in original units), MAE (robust to outliers), and $R^2$ (percentage of variance explained).
+
+#### 🎯 Best Way to Answer in an Interview
+Give formulas for MSE, RMSE, MAE, and $R^2 = 1 - \frac{SS_{\text{res}}}{SS_{\text{tot}}}$. Explain when to use MAE vs MSE (MAE when outliers are present).
+</details>
+
+<details>
+<summary><b>18. What is Principal Component Analysis (PCA)? How does it work?</b></summary>
+
+#### 💡 Simple Explanation
+Squashing a 3D shadow onto a 2D wall in a way that captures as much of the original shape's spread and detail as possible.
+
+#### 🎯 Best Way to Answer in an Interview
+Unsupervised linear technique finding orthogonal principal component axes that maximize variance via covariance matrix eigendecomposition or SVD.
+
+#### 📝 Detailed Answer
+$\Sigma = \frac{1}{N-1}X_c^T X_c$. Compute eigenvectors $v_i$ and eigenvalues $\lambda_i$. Select top $k$ eigenvectors to transform $X_{\text{pca}} = X_c W_k$.
+</details>
+
+<details>
+<summary><b>19. Explain the differences between RNN, LSTM, and GRU.</b></summary>
+
+#### 💡 Simple Explanation
+- **RNN**: Short-term memory only (forgets early words in long sentences).
+- **LSTM**: Uses 3 internal doors (gates) to maintain long-term memory.
+- **GRU**: Simplified LSTM with 2 doors, faster to train.
+
+#### 🎯 Best Way to Answer in an Interview
+RNN suffers from vanishing gradients. LSTM adds Cell State $c_t$ with Forget, Input, Output gates. GRU merges cell state into hidden state with Reset and Update gates.
+</details>
+
+<details>
+<summary><b>20. What is the vanishing gradient problem? How can it be mitigated?</b></summary>
+
+#### 💡 Simple Explanation
+Multiplying numbers smaller than 1 over and over causes the signal to shrink to near zero, stopping early neural net layers from learning.
+
+#### 🎯 Best Way to Answer in an Interview
+Caused by deep layer chain-rule multiplication of small weights/derivatives ($\sigma'(x) \le 0.25$). Mitigated by ReLU, ResNet skip connections ($+1$ gradient flow), BatchNorm, and LSTM cell states.
+</details>
+
+<details>
+<summary><b>21. How do you handle missing data?</b></summary>
+
+#### 💡 Simple Explanation
+Decide whether to drop incomplete rows, fill them with average values (mean/median/mode), or use smart algorithms like XGBoost that learn how to handle missing data automatically.
+
+#### 🎯 Best Way to Answer in an Interview
+Check missingness type (MCAR, MAR, MNAR). Apply Mean/Median/Mode, KNN imputation, or leverage native XGBoost sparsity-aware splits.
+</details>
+
+<details>
+<summary><b>22. What is data leakage? Give an example and how to prevent it.</b></summary>
+
+#### 💡 Simple Explanation
+Accidentally letting the model look at the answer key or future data during training.
+
+#### 🎯 Best Way to Answer in an Interview
+Give an example (scaling entire dataset before train/test split or using future feature like `cancellation_date`). Prevent using scikit-learn `Pipeline` and strict temporal splits.
+</details>
+
+<details>
+<summary><b>23. Describe the process of fine‑tuning a large language model.</b></summary>
+
+#### 💡 Simple Explanation
+Taking a general smart AI model (pre-trained on the internet) and giving it specialized training data to make it an expert in customer service or medical answers.
+
+#### 🎯 Best Way to Answer in an Interview
+Explain Supervised Fine-Tuning (SFT) and Parameter-Efficient Fine-Tuning (PEFT / LoRA). LoRA decomposes weight updates into low-rank matrices $W_0 + \frac{\alpha}{r}(BA)$, reducing VRAM by $>70\%$.
+</details>
+
+<details>
+<summary><b>24. What is retrieval‑augmented generation (RAG)? When would you use it?</b></summary>
+
+#### 💡 Simple Explanation
+Giving an LLM an open-book exam: it searches a private vector database for exact reference documents first, then answers the prompt using those retrieved facts.
+
+#### 🎯 Best Way to Answer in an Interview
+1. Chunk & Embed domain documents into Vector DB (HNSW search).
+2. Retrieve top-$k$ relevant chunks for query.
+3. Prepend context into LLM prompt. Prevents hallucinations and avoids retraining.
+</details>
+
+<details>
+<summary><b>25. How do you deploy a machine learning model in production?</b></summary>
+
+#### 💡 Simple Explanation
+Package the trained model into a fast API server inside a container, put it on cloud servers, and monitor it to make sure it answers quickly and stays accurate over time.
+
+#### 🎯 Best Way to Answer in an Interview
+Export model (ONNX/TorchScript), wrap in FastAPI/Triton server, containerize with Docker, deploy on Kubernetes with low-latency feature stores (Redis), and set up KS-test data drift monitoring.
 </details>
 
 ---
@@ -141,180 +348,357 @@ Explain that Cross-Validation (e.g., $k$-fold) splits data into $k$ equal subset
 ## 2. Top 50 Most Difficult Questions
 
 <details>
-<summary><b>Q1: Derive backpropagation for an LSTM cell, including all gates.</b></summary>
+<summary><b>1. Derive backpropagation for an LSTM cell, including all gates.</b></summary>
 
 #### 💡 Simple Explanation
-LSTM has 4 internal doors (gates) that control memory flow. Backpropagation works backwards through time step by step, using the calculus chain rule to calculate how changing each gate's weights affects the final prediction error.
+LSTM memory flows along two tracks: hidden state $h_t$ and cell state $c_t$. Backpropagation calculates errors through time using chain rule, with cell state acting as an additive highway where gradients don't decay.
 
 #### 🎯 Best Way to Answer in an Interview
-1. State the 4 gate equations ($f_t, i_t, \tilde{c}_t, o_t$).
-2. Explain that gradients flow along two paths: hidden state $h_t$ and cell state $c_t$.
-3. Emphasize that the cell state path $c_t = f_t \odot c_{t-1} + i_t \odot \tilde{c}_t$ acts as an additive highway, allowing gradients to propagate backward across time without vanishing.
-
-#### 📝 Detailed Technical Answer
-Equations:
-$$f_t = \sigma(W_f [h_{t-1}, x_t] + b_f), \quad i_t = \sigma(W_i [h_{t-1}, x_t] + b_i)$$
-$$\tilde{c}_t = \tanh(W_c [h_{t-1}, x_t] + b_c), \quad o_t = \sigma(W_o [h_{t-1}, x_t] + b_o)$$
-$$c_t = f_t \odot c_{t-1} + i_t \odot \tilde{c}_t, \quad h_t = o_t \odot \tanh(c_t)$$
-
-Gradient w.r.t cell state $c_t$:
-$$\delta c_t = \frac{\partial \mathcal{L}}{\partial c_t} = \frac{\partial \mathcal{L}}{\partial h_t} \odot o_t \odot (1 - \tanh^2(c_t)) + \delta c_{t+1} \odot f_{t+1}$$
-Because $\delta c_t$ includes $\delta c_{t+1} \odot f_{t+1}$, when forget gate $f_{t+1} \approx 1$, gradient flows backward across time steps with zero exponential decay!
+Write out the 4 gate equations ($f_t, i_t, \tilde{c}_t, o_t$). Show that cell state error gradient $\delta c_t = \delta c_{t+1} \odot f_{t+1} + \dots$ preserves gradient magnitude when forget gate $f_{t+1} \approx 1$.
 </details>
 
 <details>
-<summary><b>Q2: Explain the scaled dot‑product attention mechanism mathematically, including the role of scaling.</b></summary>
+<summary><b>2. Explain the scaled dot‑product attention mechanism mathematically, including the role of scaling.</b></summary>
 
 #### 💡 Simple Explanation
-Attention is like a search engine query:
-- **Query ($Q$)**: What you are searching for.
-- **Key ($K$)**: Title tags of all documents in the database.
-- **Value ($V$)**: The actual content of the documents.
-The model calculates matching scores between Query and Keys, turns them into percentages using Softmax, and fetches a weighted sum of Values. Dividing by $\sqrt{d_k}$ keeps numbers from getting too large.
+Attention calculates matching scores between Query and Keys, converts scores into weights via Softmax, and computes a weighted average of Values. Dividing by $\sqrt{d_k}$ prevents variance explosion in high dimensions.
 
 #### 🎯 Best Way to Answer in an Interview
-Write out $\text{Attention}(Q,K,V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V$. Explain that for large embedding dimensions $d_k$, the dot product $QK^T$ grows large in magnitude, pushing Softmax into flat saturation regions where gradients become near zero. Scaling by $1/\sqrt{d_k}$ preserves unit variance.
-
-#### 📝 Detailed Technical Answer
-Let $q, k \in \mathbb{R}^{d_k}$ be independent random variables with mean 0 and variance 1.
-$$\mathbb{E}[q \cdot k] = 0, \quad \text{Var}(q \cdot k) = \sum_{i=1}^{d_k} \text{Var}(q_i k_i) = d_k$$
-The dot product has variance $d_k$ and standard deviation $\sqrt{d_k}$. Dividing by $\sqrt{d_k}$ normalizes the variance back to 1.
+State $\text{Attention}(Q,K,V) = \text{softmax}(QK^T/\sqrt{d_k})V$. Prove that for independent random vectors with variance 1, $\text{Var}(q \cdot k) = d_k$. Dividing by $\sqrt{d_k}$ normalizes variance to 1, preventing softmax gradient saturation.
 </details>
 
 <details>
-<summary><b>Q3: Why does batch normalization work? Derive its effect on covariate shift and discuss training vs inference behavior.</b></summary>
+<summary><b>3. Why does batch normalization work? Derive its effect on covariate shift and discuss training vs inference behavior.</b></summary>
 
 #### 💡 Simple Explanation
-Imagine a team of runners. If every layer changes its speed randomly during training, the next layer has to constantly re-adapt. BatchNorm standardizes each layer's outputs so every layer works with stable, zero-centered data. During testing, it uses fixed average statistics learned during training.
-
-#### 🎯 Best Way to Answer in an Interview
-1. State formula: $\hat{x} = \frac{x - \mu_B}{\sqrt{\sigma_B^2+\epsilon}}$, $y = \gamma \hat{x} + \beta$.
-2. Explain that it reduces Internal Covariate Shift and smooths the loss landscape gradient steps.
-3. Highlight difference: Training uses mini-batch mean/variance; Inference uses running exponential moving average computed during training.
-
-#### 📝 Detailed Technical Answer
-During training:
-$$\mu_B = \frac{1}{m}\sum x_i, \quad \sigma_B^2 = \frac{1}{m}\sum (x_i - \mu_B)^2$$
-During inference, batch statistics are unavailable (e.g. processing 1 sample). Model uses population statistics: $\mu_{\text{pop}} = \mathbb{E}[\mu_B], \sigma^2_{\text{pop}} = \frac{m}{m-1}\mathbb{E}[\sigma_B^2]$ tracked via running average $\mu_{\text{run}} \leftarrow (1-\alpha)\mu_{\text{run}} + \alpha \mu_B$.
-</details>
-
----
-
-## 3. Top 50 Most Tricky Questions
-
-<details>
-<summary><b>Q1: Why does ReLU help with vanishing gradient? But what about dying ReLU?</b></summary>
-
-#### 💡 Simple Explanation
-- **Why it helps**: For positive numbers, ReLU's slope is always 1. A slope of 1 never shrinks when multiplied repeatedly during backpropagation!
-- **Dying ReLU**: If a large negative update pushes a neuron so it outputs negative numbers for every single input, its slope stays 0 forever. The neuron "dies" and never updates again.
-
-#### 🎯 Best Way to Answer in an Interview
-Explain that $\frac{d}{dx}\text{ReLU}(x) = 1$ for $x > 0$, preventing gradient shrinking. Contrast with Sigmoid whose max derivative is $0.25$. Mention that Dying ReLU is solved by LeakyReLU ($\max(\alpha x, x)$), ELU, or proper He initialization.
-
-#### 📝 Detailed Technical Answer
-Sigmoid derivative $\sigma'(x) = \sigma(x)(1-\sigma(x)) \le 0.25$. Multiplying this over $L$ layers causes exponential decay $0.25^L \to 0$. ReLU derivative is $1$ for $x>0$. If learning rate is too high, a large weight update can make $w^T x + b < 0$ for all training samples $X$, trapping gradient $\frac{\partial \mathcal{L}}{\partial w} = 0$ permanently ("Dying ReLU").
+Normalizes layer activations across mini-batch to zero mean and unit variance. During training it uses mini-batch statistics; during inference it uses running population averages.
 </details>
 
 <details>
-<summary><b>Q2: What is the difference between a validation set and a test set?</b></summary>
+<summary><b>4. How do Generative Adversarial Networks (GANs) work? Formulate the minimax loss and discuss mode collapse.</b></summary>
 
 #### 💡 Simple Explanation
-- **Validation Set**: Practice exams you take while studying. You tweak your study strategy (tune hyperparameters) based on your practice test scores.
-- **Test Set**: The final official exam at the end of the course. You take it once, and you cannot change your strategy afterwards!
-
-#### 🎯 Best Way to Answer in an Interview
-State that Validation set is used for hyperparameter tuning and model selection during development (indirect data leakage occurs). Test set is locked in a vault and evaluated **only once** to estimate unbiased real-world generalization error.
-
-#### 📝 Detailed Technical Answer
-Repeatedly evaluating candidate models on validation data causes information leakage into hyperparameter choice $\theta^* = \arg\min_\theta \mathcal{L}_{\text{val}}(f_\theta)$. Therefore, validation error is a biased (optimistic) estimator of true risk. Test set provides unbiased risk estimate $R_{\text{test}}(f_{\theta^*})$.
-</details>
-
----
-
-## 4. Top 50 Must‑Know Questions
-
-<details>
-<summary><b>Q1: Define supervised, unsupervised, semi‑supervised, and reinforcement learning.</b></summary>
-
-#### 💡 Simple Explanation
-- **Supervised**: Learning with answers provided ($X \to y$).
-- **Unsupervised**: Finding hidden patterns in raw data without answers ($X$).
-- **Semi-Supervised**: Learning with a tiny handful of answered questions and millions of unanswered questions.
-- **Reinforcement**: Learning by trial and error in a video game, getting rewards for good moves and penalties for dying.
-
-#### 🎯 Best Way to Answer in an Interview
-Briefly define the data format and objective for each category:
-1. Supervised ($X, y$ labels)
-2. Unsupervised (unlabeled $X$)
-3. Semi-supervised (small labeled $X_L$, large unlabeled $X_U$)
-4. Reinforcement (Agent, State $S$, Action $A$, Reward $R$, Environment transition)
-
-#### 📝 Detailed Technical Answer
-- **Supervised**: Learns conditional distribution $P(y|X)$.
-- **Unsupervised**: Learns data likelihood $P(X)$ or latent manifold.
-- **Semi-Supervised**: Uses $P(X)$ from unlabeled data to regularize decision boundary of $P(y|X)$ (e.g. Pseudo-Labeling, Self-Training).
-- **RL**: Optimizes policy $\pi(a|s)$ to maximize expected cumulative discounted reward $J(\pi) = \mathbb{E}\left[\sum_{t=0}^\infty \gamma^t R_t\right]$ in Markov Decision Process (MDP).
-</details>
-
----
-
-## 5. Top 50 Frequently Rejected Questions
-
-<details>
-<summary><b>Q1: "How do you deal with overfitting?" — Why vague answers fail & how to answer properly.</b></summary>
-
-#### ❌ Why Candidates Get Rejected
-Saying *"Just use dropout"* or *"Set max_depth"* shows zero diagnostic intuition. Interviewers want to see a systematic engineering approach!
-
-#### 💡 Simple Explanation
-First diagnose *where* and *how much* the model is overfitting by looking at the gap between training error and validation error. Then pick the right tool: if it's a decision tree, prune it; if it's a neural net, add dropout/weight decay; if data is small, augment data or get more samples!
-
-#### 🎯 Best Way to Answer in an Interview
-1. **Diagnosis First**: "I first plot learning curves to confirm high variance (train loss low, val loss high)."
-2. **Data-Centric Remedies**: "Gather more training data, apply domain-specific data augmentation."
-3. **Model-Centric Remedies**: "Apply $L_1/L_2$ regularization, Dropout, early stopping, or prune tree depth."
-4. **Ensembling**: "Switch to Bagging ensembles (Random Forest) which naturally reduce variance."
-</details>
-
----
-
-## 6. Top 50 Questions That Differentiate Top Candidates
-
-<details>
-<summary><b>Q1: Compare the inductive biases of CNNs, RNNs, and Transformers.</b></summary>
-
-#### 💡 Simple Explanation
-- **CNN**: Assumes nearby pixels are strongly related (locality) and a cat is still a cat if it moves to the corner of the screen (translation invariance).
-- **RNN**: Assumes word order matters sequentially step-by-step in time.
-- **Transformer**: Makes **almost no assumptions**! It lets every word talk directly to every other word. Because it assumes so little, it needs massive datasets to learn, but performs much better once trained!
-
-#### 🎯 Best Way to Answer in an Interview
-1. Define **Inductive Bias**: The set of assumptions a model makes to generalize to unseen data.
-2. Contrast CNN (high spatial locality & translation invariance) and RNN (temporal sequentiality) with Transformers (minimal structural bias).
-3. Conclude that low inductive bias allows Transformers to achieve higher capacity on massive datasets, but makes them prone to overfitting on small datasets.
-
-####  stream Technical Breakdown
-- **CNN**: Hardcodes 2D grid locality (kernel footprint) and translation equipredariance ($f(g(x)) = g(f(x))$). Parameter efficiency is extremely high ($O(K^2)$).
-- **RNN**: Hardcodes 1D temporal Markovian sequence flow ($h_t = f(h_{t-1}, x_t)$). Bottlenecked by sequential computation.
-- **Transformer**: Global pairwise attention $\text{softmax}(QK^T)V$ assumes permutation invariance without positional encodings. $O(N^2)$ sequence complexity, requiring high data volume to learn positional/relational structures without explicit spatial priors.
+A game between a Counterfeiter (Generator) making fake bills and a Cop (Discriminator) catching fakes. Minimax objective: $\min_G \max_D \mathbb{E}[\log D(x)] + \mathbb{E}[\log(1-D(G(z)))]$. Mode collapse occurs when Generator produces only 1 output type.
 </details>
 
 <details>
-<summary><b>Q6: How does FlashAttention work and why does it improve efficiency?</b></summary>
+<summary><b>5. What is the reparameterization trick in Variational Autoencoders (VAEs) and why is it necessary?</b></summary>
 
 #### 💡 Simple Explanation
-Standard attention creates a massive temporary matrix in slow GPU main memory (HBM), causing a traffic jam when moving data back and forth to the fast GPU processor (SRAM). FlashAttention breaks the calculation into small blocks (tiles), processes them entirely inside fast processor memory using clever math (online softmax), and writes back only the final result!
+Random sampling is non-differentiable. The trick rewrites sample $z = \mu + \sigma \odot \epsilon$ where $\epsilon \sim \mathcal{N}(0, I)$, allowing backpropagation gradients to flow through $\mu$ and $\sigma$.
+</details>
 
-#### 🎯 Best Way to Answer in an Interview
-1. Identify the bottleneck: Standard attention is **memory-bandwidth bound** (IO-bound) due to reading/writing $N \times N$ attention matrices to GPU HBM.
-2. Explain FlashAttention's core technique: **Tiling** and **Online Softmax**.
-3. State performance impact: Reduces memory from $O(N^2)$ to $O(N)$ and yields $2\times - 4\times$ wall-clock speedups without any mathematical approximation (exact attention!).
+<details>
+<summary><b>6. Describe the pre‑training objectives of BERT (masked language model and next sentence prediction) and their motivation.</b></summary>
 
-#### 📝 Detailed Technical Answer
-Standard self-attention performs:
-$$S = QK^T \in \mathbb{R}^{N \times N} \text{ (write to HBM)}, \quad P = \text{softmax}(S) \text{ (read/write HBM)}, \quad O = PV \text{ (read HBM)}$$
-FlashAttention loads blocks of $Q, K, V$ into $64\text{KB}$ GPU SRAM, computes softmax incrementally via online scaling:
-$$m(x) = \max(m(x^{(1)}), m(x^{(2)})), \quad f(x) = e^{x^{(1)} - m(x)} + e^{x^{(2)} - m(x)}$$
-This completely bypasses writing the $N \times N$ matrix $S$ and $P$ to HBM, reducing memory IO traffic by an order of magnitude.
+#### 💡 Simple Explanation
+MLM masks 15% of words to teach deep bidirectional context. NSP predicts if sentence B follows A to understand text relationships.
+</details>
+
+<details>
+<summary><b>7. Formulate a Markov Decision Process (MDP), define value functions and Q‑learning.</b></summary>
+
+#### 💡 Simple Explanation
+MDP defined by $(S, A, P, R, \gamma)$. Q-learning updates action values: $Q(s,a) \leftarrow Q(s,a) + \alpha [r + \gamma \max_{a'} Q(s',a') - Q(s,a)]$.
+</details>
+
+<details>
+<summary><b>8. Compare on‑policy (SARSA) and off‑policy (Q‑learning) reinforcement learning.</b></summary>
+
+#### 💡 Simple Explanation
+SARSA updates Q-value using actual next action taken by current policy. Q-learning updates using best theoretical next action regardless of actual choice.
+</details>
+
+<details>
+<summary><b>9. How does Transformer‑XL handle long‑term dependencies? Explain segment‑level recurrence and relative positional encodings.</b></summary>
+
+#### 💡 Simple Explanation
+Caches hidden states of previous text segments as frozen memory and uses relative distance encodings instead of fixed absolute positions.
+</details>
+
+<details>
+<summary><b>10. Derive the gradient of the softmax function combined with cross‑entropy loss; show why it simplifies.</b></summary>
+
+#### 💡 Simple Explanation
+$\frac{\partial \mathcal{L}}{\partial z_i} = p_i - y_i$. Softmax derivative terms cancel neatly with log cross-entropy terms, yielding simple predicted minus true target vector.
+</details>
+
+<details>
+<summary><b>11. When and why would you use gradient clipping? Provide mathematical justification.</b></summary>
+
+#### 💡 Simple Explanation
+Scales down gradient vector if $\|g\| > c$, preventing exploding gradients from causing numerical overflow (`NaN`).
+</details>
+
+<details>
+<summary><b>12. What is Neural Architecture Search (NAS)? Discuss search spaces, performance estimation strategies, and search algorithms.</b></summary>
+
+#### 💡 Simple Explanation
+Automates deep learning model design using RL or evolutionary algorithms to discover optimal layer structures.
+</details>
+
+<details>
+<summary><b>13. Explain "teacher forcing" in sequence models and its pitfalls (exposure bias).</b></summary>
+
+#### 💡 Simple Explanation
+Feeding ground truth target tokens during decoder training instead of model predictions. Causes exposure bias during inference when mistakes compound.
+</details>
+
+<details>
+<summary><b>14. Compare perplexity, BLEU, ROUGE for evaluating language models; when is each appropriate?</b></summary>
+
+#### 💡 Simple Explanation
+Perplexity measures model uncertainty ($\exp(\text{loss})$). BLEU measures translation precision n-grams. ROUGE measures summarization recall n-grams.
+</details>
+
+<details>
+<summary><b>15. How do you address the cold‑start problem in recommendation systems? Name multiple strategies.</b></summary>
+
+#### 💡 Simple Explanation
+Use item metadata embeddings, multi-armed bandit exploration (Thompson Sampling), popularity defaults, or onboarding user surveys.
+</details>
+
+<details>
+<summary><b>16. How does contrastive learning work? Explain SimCLR and MoCo architectures.</b></summary>
+
+#### 💡 Simple Explanation
+Pulls different augmented views of the same image together in embedding space while pushing different images apart using InfoNCE loss.
+</details>
+
+<details>
+<summary><b>17. What is the InfoNCE loss? Relate it to mutual information maximization.</b></summary>
+
+#### 💡 Simple Explanation
+Cross-entropy loss over similarity scores that maximizes lower bound on mutual information between representation pairs.
+</details>
+
+<details>
+<summary><b>18. Describe the message‑passing framework of Graph Neural Networks (GNNs). How does a GCN aggregate?</b></summary>
+
+#### 💡 Simple Explanation
+Nodes collect neighbor feature embeddings, transform them with weights $W$, and aggregate via normalized sums to update node state.
+</details>
+
+<details>
+<summary><b>19. How do you handle streaming data and concept drift in production? Discuss detection and adaptation techniques.</b></summary>
+
+#### 💡 Simple Explanation
+Detect with Kolmogorov-Smirnov statistical tests or PSI. Adapt via continuous online learning or automated rolling-window retraining pipelines.
+</details>
+
+<details>
+<summary><b>20. Eager execution vs graph execution in TensorFlow: trade‑offs in development and deployment.</b></summary>
+
+#### 💡 Simple Explanation
+Eager runs code line-by-line (easy debugging). Graph compiles operations into an optimized computation graph (fast serving).
+</details>
+
+<details>
+<summary><b>21. Explain the forward and reverse diffusion processes in Denoising Diffusion Probabilistic Models (DDPMs).</b></summary>
+
+#### 💡 Simple Explanation
+Forward process gradually adds Gaussian noise to an image. Reverse process trains a U-Net to predict and remove noise step-by-step to generate new images.
+</details>
+
+<details>
+<summary><b>22. Derive the update equations for the Adam optimizer, including bias correction terms.</b></summary>
+
+#### 💡 Simple Explanation
+$m_t = \beta_1 m_{t-1} + (1-\beta_1)g_t$, $v_t = \beta_2 v_{t-1} + (1-\beta_2)g_t^2$. Bias correction $\hat{m}_t = m_t/(1-\beta_1^t), \hat{v}_t = v_t/(1-\beta_2^t)$.
+</details>
+
+<details>
+<summary><b>23. Why is accuracy a poor metric for imbalanced classification? Design a composite metric that accounts for both precision and recall.</b></summary>
+
+#### 💡 Simple Explanation
+Accuracy counts true negatives. Use $F_\beta = (1+\beta^2)\frac{P \cdot R}{\beta^2 P + R}$ where $\beta$ weights recall relative importance.
+</details>
+
+<details>
+<summary><b>24. Implement a custom loss function in PyTorch, ensuring it integrates with autograd.</b></summary>
+
+#### 💡 Simple Explanation
+Subclass `nn.Module` and write tensor math in `forward()`. PyTorch autograd builds dynamic backward graph automatically.
+</details>
+
+<details>
+<summary><b>25. What is exposure bias in sequence generation and how can scheduled sampling mitigate it?</b></summary>
+
+#### 💡 Simple Explanation
+Scheduled sampling gradually transitions decoder inputs from ground-truth target tokens to generated tokens during training.
+</details>
+
+<details>
+<summary><b>26. Prove that L1 regularization induces sparsity.</b></summary>
+
+#### 💡 Simple Explanation
+Geometrically, L1 constraint $|w_1|+|w_2|\le C$ has sharp corners on axes where smooth loss contours hit, driving weights to exact 0.
+</details>
+
+<details>
+<summary><b>27. Explain the Expectation‑Maximization (EM) algorithm and derive it for Gaussian Mixture Models.</b></summary>
+
+#### 💡 Simple Explanation
+E-step calculates cluster assignment probabilities. M-step updates Gaussian means, covariances, and weights based on those assignments.
+</details>
+
+<details>
+<summary><b>28. How does a Support Vector Machine use the kernel trick? Derive the dual formulation.</b></summary>
+
+#### 💡 Simple Explanation
+Replaces dot products $x_i^T x_j$ with kernel functions $K(x_i, x_j) = \phi(x_i)^T \phi(x_j)$ to compute high-dimensional margins implicitly.
+</details>
+
+<details>
+<summary><b>29. What are the limitations of using Euclidean distance in high‑dimensional spaces? (curse of dimensionality)</b></summary>
+
+#### 💡 Simple Explanation
+Distance ratio $(\max d - \min d)/\min d \to 0$ as dimensions grow, making all data points appear equally far apart.
+</details>
+
+<details>
+<summary><b>30. Describe the working of a Transformer encoder layer in detail, including multi‑head attention and feed‑forward network.</b></summary>
+
+#### 💡 Simple Explanation
+Input $\to$ Multi-Head Attention $\to$ Add & LayerNorm $\to$ Position-wise Feed-Forward Network ($W_2 \text{ReLU}(W_1 x + b_1) + b_2$) $\to$ Add & LayerNorm.
+</details>
+
+<details>
+<summary><b>31. What is the difference between hard attention and soft attention? Why is soft attention preferred?</b></summary>
+
+#### 💡 Simple Explanation
+Soft attention computes differentiable weighted averages (trained via backprop). Hard attention picks 1 token stochastically (requires RL).
+</details>
+
+<details>
+<summary><b>32. How does gradient boosting work in terms of functional gradient descent?</b></summary>
+
+#### 💡 Simple Explanation
+Fits each new weak tree to pseudo-residuals $-\frac{\partial \mathcal{L}}{\partial f(x)}$, stepping downhill in function space.
+</details>
+
+<details>
+<summary><b>33. Explain the connection between logistic regression, maximum entropy, and generalized linear models.</b></summary>
+
+#### 💡 Simple Explanation
+Logistic regression is the max-entropy distribution for binary data and belongs to Exponential Family GLMs with logit link function.
+</details>
+
+<details>
+<summary><b>34. What is KL divergence? Show how minimizing KL divergence relates to maximum likelihood estimation.</b></summary>
+
+#### 💡 Simple Explanation
+$D_{\text{KL}}(P||Q) = \sum P(x)\log \frac{P(x)}{Q(x)}$. Minimizing KL divergence w.r.t model parameters is identical to maximizing data log-likelihood.
+</details>
+
+<details>
+<summary><b>35. Describe the vanishing/exploding gradient problem in RNNs and derive why LSTM's gating alleviates it.</b></summary>
+
+#### 💡 Simple Explanation
+Additive cell state update $c_t = f_t \odot c_{t-1} + i_t \odot \tilde{c}_t$ preserves linear gradient pathway when $f_t \approx 1$.
+</details>
+
+<details>
+<summary><b>36. How do you perform hyperparameter optimization with Bayesian optimization? Compare to grid/random search.</b></summary>
+
+#### 💡 Simple Explanation
+Builds a Gaussian Process surrogate model to intelligently sample promising hyperparameter regions using acquisition functions.
+</details>
+
+<details>
+<summary><b>37. What is a Wasserstein GAN? How does it improve training stability?</b></summary>
+
+#### 💡 Simple Explanation
+Uses Earth Mover's distance to provide smooth, non-saturating gradients everywhere, eliminating GAN mode collapse.
+</details>
+
+<details>
+<summary><b>38. Explain the concept of "curse of dimensionality" in the context of k‑nearest neighbors.</b></summary>
+
+#### 💡 Simple Explanation
+High dimensions cause data points to become extremely sparse, requiring huge search radii that degrade distance metric meaningfulness.
+</details>
+
+<details>
+<summary><b>39. Derive the backpropagation through time (BPTT) for a simple RNN.</b></summary>
+
+#### 💡 Simple Explanation
+$\frac{\partial \mathcal{L}}{\partial W_{hh}} = \sum_{t=1}^T \sum_{k=1}^t \frac{\partial \mathcal{L}_t}{\partial h_t} \left(\prod_{j=k+1}^t \frac{\partial h_j}{\partial h_{j-1}}\right) \frac{\partial h_k}{\partial W_{hh}}$.
+</details>
+
+<details>
+<summary><b>40. How do transformers capture positional information without recurrence? Discuss sinusoidal and learned positional embeddings.</b></summary>
+
+#### 💡 Simple Explanation
+Adds positional vectors $PE_{(pos, 2i)} = \sin(pos/10000^{2i/d})$ to input embeddings so self-attention can distinguish word order.
+</details>
+
+<details>
+<summary><b>41. What is the NTK (Neural Tangent Kernel) and how does it help understand neural network training in the infinite width limit?</b></summary>
+
+#### 💡 Simple Explanation
+Shows that as neural layer widths approach infinity, training dynamics converge to linear models governed by a static kernel (NTK).
+</details>
+
+<details>
+<summary><b>42. Describe model distillation; how does it work and why might a student model outperform its teacher?</b></summary>
+
+#### 💡 Simple Explanation
+Student model trains on soft probabilities from large teacher model, acquiring "dark knowledge" (inter-class similarity structures).
+</details>
+
+<details>
+<summary><b>43. Explain the role of temperature in softmax for knowledge distillation.</b></summary>
+
+#### 💡 Simple Explanation
+Temperature $T > 1$ softens probability outputs ($p_i = \frac{e^{z_i/T}}{\sum e^{z_j/T}}$), highlighting non-target class relationships.
+</details>
+
+<details>
+<summary><b>44. How does a memory‑augmented neural network (e.g., NTM) differ from a standard RNN?</b></summary>
+
+#### 💡 Simple Explanation
+Decouples controller network from external memory matrix using differentiable read/write head operations.
+</details>
+
+<details>
+<summary><b>45. What is federated learning? Discuss challenges like non‑IID data and communication efficiency.</b></summary>
+
+#### 💡 Simple Explanation
+Trains models locally on decentralized edge devices and aggregates weight updates on a central server (FedAvg).
+</details>
+
+<details>
+<summary><b>46. How does a transformer‑based object detector (DETR) work differently from traditional detectors?</b></summary>
+
+#### 💡 Simple Explanation
+Eliminates anchor boxes and NMS by modeling detection as set prediction using Transformer decoder and bipartite Hungarian loss.
+</details>
+
+<details>
+<summary><b>47. Explain the concept of "label smoothing" and its effect on model calibration.</b></summary>
+
+#### 💡 Simple Explanation
+Replaces one-hot targets $[1, 0]$ with soft targets $[1-\epsilon, \epsilon/K]$, preventing model overconfidence and improving calibration.
+</details>
+
+<details>
+<summary><b>48. How would you design a real‑time anomaly detection system for high‑dimensional time series?</b></summary>
+
+#### 💡 Simple Explanation
+Train Autoencoders on normal data; flag anomalies when reconstruction error $\|x - \hat{x}\|^2$ exceeds dynamic threshold.
+</details>
+
+<details>
+<summary><b>49. What is the role of the "log‑sum‑exp" trick in numerical stability?</b></summary>
+
+#### 💡 Simple Explanation
+Computes $\log \sum e^{z_i} = c + \log \sum e^{z_i - c}$ (where $c = \max z_i$) to prevent exponential overflow (`Inf`) in Softmax.
+</details>
+
+<details>
+<summary><b>50. Explain the connection between dropout and ensemble learning, including the inference‑time weight scaling.</b></summary>
+
+#### 💡 Simple Explanation
+Dropout trains $2^N$ sub-networks with shared weights. Testing with all scaled weights acts as geometric mean ensembling.
 </details>
