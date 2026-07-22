@@ -1,194 +1,224 @@
-# 📖 System Design Comprehensive Interview Guide
+# 📚 Comprehensive System Design Interview Guide
 
-*An exhaustive, 3-tier deep dive covering foundational building blocks, intermediate architectural patterns, and senior-level distributed system concepts, including 150+ detailed theory questions.*
-
----
-
-## 🟢 Section 1: 3-Tier Core Architecture Fundamentals
-
-### 1. Beginner Tier (SDE-1 / Fundamentals)
-- **Monolith vs Microservices**: Monoliths provide easy initial development, simple ACID transactions, and unified deployment. Microservices offer domain decoupling, independent tech stacks, and granular horizontal scaling at the cost of distributed complexity and eventual consistency.
-- **Client-Server Communication**:
-  - *HTTP/1.1 vs HTTP/2 vs HTTP/3*: HTTP/1.1 suffers from head-of-line blocking. HTTP/2 introduces binary frame multiplexing over single TCP connection. HTTP/3 runs on QUIC (UDP) to eliminate TCP connection setup overhead and packet-loss head-of-line blocking.
-  - *REST vs gRPC*: REST uses human-readable JSON over HTTP/1.1; gRPC uses strongly-typed binary Protocol Buffers over HTTP/2 ($5\times-10\times$ faster, bidirectional streaming).
-  - *WebSockets vs SSE vs Long Polling*: WebSockets offer full-duplex persistent communication; SSE offers mono-directional server-to-client streaming over standard HTTP; Long Polling simulates real-time by holding HTTP requests open.
-- **Load Balancing & Reverse Proxies**:
-  - *Reverse Proxy (NGINX/HAProxy)*: Sits in front of servers, providing SSL termination, compression, caching, and security masking.
-  - *Load Balancing Algorithms*: Round Robin, Weighted Round Robin, Least Connections, IP Hash / Consistent Hashing.
-- **Caching Fundamentals**: LRU, LFU, TTL eviction policies. Cache-Aside vs Write-Through vs Write-Back.
-
-### 2. Intermediate Tier (SDE-2 / Systems Design)
-- **Database Sharding**: Range-based vs Hash-based vs Consistent Hashing. Consistent Hashing ring with virtual nodes minimizes key re-mapping during node additions/removals to $1/N$.
-- **Rate Limiting Algorithms**: Token Bucket (supports bursts), Leaky Bucket (smooth outflow rate), Sliding Window Counter. Implementation via Redis Lua scripts.
-- **Message Queues vs Event Streams**:
-  - *RabbitMQ*: Push-based queue, point-to-point delivery, message deleted on acknowledgment.
-  - *Apache Kafka*: Pull-based persistent append-only log stream, consumer offset tracking, message replayability.
-- **Celebrity Fan-out Problem**: Hybrid approach (Push for normal users with $<5\text{k}$ followers; Pull on-demand for accounts with $>10\text{k}$ followers).
-
-### 3. Advanced Tier (Senior / Staff / Principal)
-- **CAP & PACELC Theorems**: In network partition ($P$), pick Consistency ($C$) or Availability ($A$). Else ($E$), pick Latency ($L$) or Consistency ($C$).
-- **Consensus & Storage Internals**:
-  - *Raft / Paxos*: Strong leader election, log replication, majority quorum $Q = \lfloor N/2 \rfloor + 1$.
-  - *LSM Trees vs B+ Trees*: B+ Trees optimize for reads ($O(\log N)$ random seeks, in-place updates). LSM Trees (WAL + MemTable + SSTables + Bloom Filters) optimize for sequential write throughput.
-- **Distributed Transactions**: Two-Phase Commit (2PC - blocking, high latency) vs Saga Pattern (event-driven local transactions with compensating undo actions).
-- **Resilience Patterns**: Circuit Breaker (Closed, Open, Half-Open states), Bulkhead thread isolation, Exponential Backoff with Jitter, Monotonic Fencing Tokens.
+*An exhaustive 3-Tier Deep Dive into System Design concepts for Software Engineers (SDE-1 to Staff).*
 
 ---
 
-## 📚 Section 2: Theory Questions & Deep Dives (150+ Questions)
+# 🟢 Part 1: Beginner Level (Foundations & Core Building Blocks)
 
 ---
 
-### 🌐 Domain 1: Distributed Systems Fundamentals (40 Qs)
+## 1. Core Topics & Architectural Paradigms
 
-1. **What is CAP Theorem?**  
-   *Answer*: In a distributed system with network partitions ($P$), you must trade off between Consistency ($C$) (every read receives the most recent write or error) and Availability ($A$) (every non-failing node returns a non-error response).
+### Client-Server Architecture & Communication Models
+- **Client-Server Model**: Core paradigm where clients (browsers, mobile apps, IoT devices) initiate requests and servers process requests and return responses.
+- **OSI Model vs. TCP/IP Model**:
+  - *OSI 7 Layers*: Physical, Data Link, Network (IP), Transport (TCP/UDP), Session, Presentation, Application (HTTP/TLS).
+  - *Transport Protocols*:
+    - **TCP (Transmission Control Protocol)**: Connection-oriented, reliable, guarantees packet ordering via sequence numbers and ACKs, flow control (sliding window), congestion control. Used for HTTP, gRPC, MySQL, SSH.
+    - **UDP (User Datagram Protocol)**: Connectionless, lightweight, low-overhead, no ordering or retry guarantees. Used for real-time video streaming (WebRTC), gaming, DNS, VoIP.
 
-2. **Explain PACELC Theorem with real examples.**  
-   *Answer*: If Partition ($P$), choose Availability ($A$) vs Consistency ($C$); Else ($E$), choose Latency ($L$) vs Consistency ($C$). Example: DynamoDB is PA/EL (favors availability during partitions, low latency in normal state); PostgreSQL is PC/EC.
+### Monolithic vs. Microservices Architecture
+- **Monolithic Architecture**: Single codebase, single deployment unit. Simple to develop and debug initially, but suffers from tight coupling, long build times, single point of failure (SPOF), and scaling bottlenecks.
+- **Microservices Architecture**: Application decomposed into small, loosely coupled, independently deployable services around business domains.
+  - *Pros*: Independent scalability, technology flexibility, fault isolation.
+  - *Cons*: Network latency overhead, distributed debugging complexity, eventual consistency challenges, operational complexity.
 
-3. **What is Eventual Consistency?**  
-   *Answer*: A consistency model where, given no new updates, all replicas will eventually converge and return the same data. Used in AP systems (Cassandra, DNS).
+### REST vs. gRPC vs. GraphQL vs. WebSockets
 
-4. **How do Vector Clocks detect write conflicts?**  
-   *Answer*: A vector clock $V$ tracks logical timestamps across $N$ nodes. If $V_A[i] \le V_B[i]$ for all $i$, then event $A$ causally preceded $B$. If neither dominates, a concurrent write conflict exists and requires resolution (e.g., CRDT or Last-Write-Wins).
-
-5. **What is the FLP Impossibility Result?**  
-   *Answer*: Proves that in an asynchronous network, no deterministic consensus protocol can guarantee agreement in the presence of even a single unannounced process crash.
-
-6. **Explain Raft Leader Election.**  
-   *Answer*: Nodes start as Followers. If heartbeat timer expires, Follower becomes Candidate, increments term, and requests votes. Candidate obtaining votes from majority quorum becomes Leader.
-
-7. **What is a Gossip Protocol?**  
-   *Answer*: A decentralized peer-to-peer communication protocol where nodes periodically exchange state metadata with random peers. Used for cluster membership and failure detection in Cassandra.
-
-8. **How do Read/Write Quorums work?**  
-   *Answer*: Given $N$ replicas, client writes to $W$ nodes and reads from $R$ nodes. If $W + R > N$, at least one node in the read set has the latest write, ensuring strong consistency.
-
-9. **What is Consistent Hashing?**  
-   *Answer*: A hashing technique that maps keys and nodes onto a 32-bit ring. Adding or removing a node only re-maps $1/N$ of keys. Virtual nodes ensure uniform key distribution.
-
-10. **What is a Bloom Filter?**  
-    *Answer*: A space-efficient probabilistic data structure used to test set membership. Returns "definitely not in set" (no false negatives) or "probably in set" (configurable false positive rate).
-
-11. **What is a Merkle Tree?**  
-    *Answer*: A hash tree where leaf nodes contain data block hashes and parent nodes contain hashes of children. Used for rapid anti-entropy data sync between database replicas.
-
-12. **Why is 2-Phase Commit (2PC) considered blocking?**  
-    *Answer*: If the coordinator fails after participants vote "YES" during Phase 1, participants must block and hold locks indefinitely waiting for Phase 2 decision.
-
-13. **Choreography vs Orchestration in Saga Pattern?**  
-    *Answer*: Choreography: Services exchange events directly without central control. Orchestration: A central Saga Orchestrator service directs participants on which local transaction to execute next.
-
-14. **What is Split-Brain syndrome?**  
-    *Answer*: A network partition causes a cluster to divide into two isolated sub-clusters, each electing its own leader and accepting conflicting writes. Prevented via Quorum voting ($N/2 + 1$).
-
-15. **What is a Heartbeat Protocol?**  
-    *Answer*: Periodic messages sent by nodes to signal availability. Adaptive heartbeats (Phi Accrual Failure Detector) dynamically adjust timeout thresholds based on network jitter.
-
-16. **Why do distributed locks need Fencing Tokens?**  
-    *Answer*: If a lock holder pauses (e.g., Java GC pause), its lease may expire while it still assumes it holds the lock. Storage nodes reject stale writes using monotonically increasing fencing tokens.
-
-17. **What are Lamport Timestamps?**  
-    *Answer*: A simple logical clock algorithm ($C(a) < C(b)$) used to determine partial ordering of events in a distributed system without synchronized physical clocks.
-
-18. **How does Exactly-Once delivery work in Kafka?**  
-    *Answer*: Combines idempotent producers (sequence numbers per partition) with transactional atomic commits across multiple topics/partitions.
-
-19. **What is Backpressure in streaming systems?**  
-    *Answer*: A flow-control mechanism where slow downstream consumers signal fast upstream producers to slow down data transmission rate, preventing memory buffer overflow.
-
-20. **What is Split-Brain Resolution via STONITH?**  
-    *Answer*: "Shoot The Other Node In The Head" - a hardware fencing mechanism where a surviving cluster node forcibly powers off an unresponsive node to guarantee it cannot write data.
-
-21–40. *(Topics covered in full detail: Two Generals Problem, Linearizability vs Serializability, Read-After-Write Consistency, Causal Consistency, Quorum Leases, Hinted Handoff, Read Repair, Distributed Tracing context propagation, State Machine Replication, Paxos Synod Protocol).*
+| Protocol | Transport | Format | Paradigm | Best For |
+| :--- | :--- | :--- | :--- | :--- |
+| **REST** | HTTP/1.1 or HTTP/2 | JSON / XML | Resource-based (`GET /users`) | Public Web APIs, CRUD operations |
+| **gRPC** | HTTP/2 | Protobuf (Binary) | Remote Procedure Call | Internal microservice-to-microservice high-speed RPCs |
+| **GraphQL** | HTTP/1.1 or HTTP/2 | JSON | Query language for client specs | Mobile apps with dynamic front-end data requirements |
+| **WebSockets** | TCP (Upgrade from HTTP) | Text / Binary | Bi-directional persistent socket | Real-time chat, live notifications, collaborative editing |
 
 ---
 
-### 🗃️ Domain 2: Data Storage & Databases (30 Qs)
+## 2. Fundamental System Concepts
 
-21. **ACID vs BASE properties.**  
-    *Answer*: ACID (Atomicity, Consistency, Isolation, Durability) guarantees strict transactional safety in RDBMS. BASE (Basically Available, Soft State, Eventual Consistency) prioritizes availability and horizontal scaling in NoSQL.
+### Domain Name System (DNS)
+Translates human-readable domain names (`example.com`) to IP addresses (`192.0.2.1`).
+- *Resolution Hierarchy*: Root DNS servers $\rightarrow$ Top-Level Domain (TLD) servers (`.com`) $\rightarrow$ Authoritative Name Servers.
+- *DNS Caching*: Resolved IPs cached at browser, OS, ISP, and Recursive Resolver with a TTL (Time To Live).
 
-22. **How does a B+ Tree index work?**  
-    *Answer*: An $M$-way balanced search tree where internal nodes contain keys/pointers and leaf nodes contain actual data/pointers linked sequentially. Guarantees $O(\log N)$ reads/writes.
+### Content Delivery Networks (CDNs)
+A globally distributed network of edge proxy servers (e.g., Cloudflare, CloudFront, Akamai) that cache static assets (images, CSS, JS, video chunks) geographically close to end users.
+- *Push CDN*: Origin server pushes new assets to CDN whenever content updates.
+- *Pull CDN*: CDN fetches asset from origin on first user request (cache miss) and caches it for subsequent requests.
 
-23. **LSM Tree vs B+ Tree for Write Throughput.**  
-    *Answer*: LSM Trees convert random writes into fast sequential writes to MemTable/WAL on disk, offering superior write throughput compared to B+ Trees which perform random page updates.
-
-24. **Database Sharding Strategies.**  
-    *Answer*: Range-based (predictable, risk of hot ranges), Hash-based (uniform distribution, hard to reshard), Directory-based (lookup table maps key to shard).
-
-25. **When to denormalize a database schema?**  
-    *Answer*: Denormalize in read-heavy applications where expensive SQL `JOIN` operations across multiple tables create performance bottlenecks.
-
-26. **Cache-Aside vs Write-Through vs Write-Back.**  
-    *Answer*: Cache-Aside: App reads cache, on miss reads DB & populates cache. Write-Through: App writes cache, cache synchronously writes DB. Write-Back: App writes cache, cache asynchronously flushes DB in batches.
-
-27. **Eviction Policies: LRU vs LFU vs TTL.**  
-    *Answer*: LRU evicts least recently accessed items; LFU evicts items accessed least number of times; TTL evicts items whose time-to-live expiration timer has elapsed.
-
-28. **Star Schema vs Snowflake Schema in Data Warehousing.**  
-    *Answer*: Star schema features a central fact table connected directly to denormalized dimension tables. Snowflake schema normalizes dimension tables into sub-dimensions.
-
-29. **How to execute zero-downtime database schema migration?**  
-    *Answer*: Use the Expand-Contract pattern: Add new column $\rightarrow$ Deploy dual-writing app code $\rightarrow$ Backfill historical data $\rightarrow$ Switch app reads to new column $\rightarrow$ Remove old column writes.
-
-30–50. *(Topics detailed: Multi-Version Concurrency Control (MVCC), Database Isolation Levels, Write-Ahead Logging (WAL), Covering Indexes, Write Amplification, Connection Pooling, Change Data Capture (CDC), Vector Databases, Columnar Storage Formats).*
+### Stateful vs. Stateless Architecture
+- **Stateless Tier**: Web servers do not preserve client session state between requests. Any app server can handle any request. Horizontal scaling is trivial!
+- **Stateful Tier**: Servers store session data, connections, or state in local memory (e.g., WebSockets, databases). Scaling requires sticky sessions or distributed session stores (Redis).
 
 ---
 
-### 🌐 Domain 3: API & Communication (20 Qs)
+## 3. Common Beginner Mistakes
 
-51. **REST vs gRPC vs GraphQL.**  
-    *Answer*: REST (JSON/HTTP1), gRPC (Protobuf/HTTP2 - ultra fast, bidirectional streaming), GraphQL (JSON/HTTP - client-driven field selection, prevents over-fetching).
-
-52. **WebSocket vs Long Polling vs SSE.**  
-    *Answer*: WebSockets (full-duplex persistent connection), SSE (mono-directional server-to-client streaming), Long Polling (HTTP request held open until data ready).
-
-53. **How to design idempotent REST APIs?**  
-    *Answer*: Use unique `Idempotency-Key` headers. Server checks Redis/DB for key; if processed, returns cached response without executing duplicate action.
-
-54. **API Gateway Core Responsibilities.**  
-    *Answer*: SSL termination, rate limiting, authentication/authorization validation, request routing, header transformation, metrics aggregation.
-
-55–70. *(Topics detailed: Forward vs Reverse Proxy, Content Negotiation, API Versioning, gRPC Multiplexing, Circuit Breaker Integration, OpenAPI Specifications).*
+> [!CAUTION]
+> 1. **Hardcoding IP Addresses**: Hardcoding server IPs instead of using DNS names or Load Balancer endpoints.
+> 2. **Single Point of Failure (SPOF)**: Running a single database or single web server instance without backups or replicas.
+> 3. **Ignoring Latency Differences**: Assuming RAM, Disk, and Network speeds are comparable. Remember: Reading from RAM is $\sim 100\text{ ns}$, SSD read is $\sim 100\text{ }\mu\text{s}$, network round trip across regions is $\sim 100\text{ ms}$!
+> 4. **Over-using Synchronous Calls**: Making blocking HTTP calls across multiple internal services in series instead of using asynchronous queues.
 
 ---
 
-### ⚡ Domain 4: Performance & Scalability (25 Qs)
+## 4. Expected Beginner Interview Questions
 
-71. **Horizontal vs Vertical Scaling.**  
-    *Answer*: Vertical (Scale Up: add more CPU/RAM to single server - limited by hardware, SPOF). Horizontal (Scale Out: add more commodity servers - unlimited scaling, requires stateless app design).
-
-72. **CDN Caching & Anycast BGP Routing.**  
-    *Answer*: Anycast routes client DNS requests to geographically closest CDN edge node, serving static assets with sub-10ms latency.
-
-73. **Bulkhead Pattern in Resilient Systems.**  
-    *Answer*: Isolates thread/connection pools per downstream dependency so a slow service cannot exhaust all application connection resources.
-
-74–95. *(Topics detailed: Cache Stampede Mitigation, Dynamic Load Balancing, Pre-computation Strategies, Write Buffering, Asynchronous Task Queues).*
-
----
-
-### 🛡️ Domain 5: Reliability & Security (20 Qs)
-
-96. **Active-Active vs Active-Passive Failover.**  
-    *Answer*: Active-Passive: Primary handles traffic, secondary stands by. Active-Active: Both nodes handle active traffic simultaneously, sharing load and providing instant zero-downtime failover.
-
-97. **OAuth2 vs JWT Authentication.**  
-    *Answer*: OAuth2 is an authorization framework defining token delegation roles. JWT (JSON Web Token) is a self-contained digitally signed token format used for stateless authentication.
-
-98–115. *(Topics detailed: SQL Injection Defense, TLS/SSL Handshake Internals, Rate Limiting Security, HSM Key Rotation, Zero Trust Architecture).*
+### Q1: What happens when you type `https://www.example.com` in a browser and press Enter?
+- **Expected Answer**:
+  1. *DNS Lookup*: Browser checks local cache $\rightarrow$ OS hosts file $\rightarrow$ Recursive DNS resolver queries Root, TLD, and Authoritative DNS servers to fetch IP address.
+  2. *TCP Handshake*: Browser initiates 3-Way TCP Handshake (`SYN` $\rightarrow$ `SYN-ACK` $\rightarrow$ `ACK`) with server IP on port 443.
+  3. *TLS Handshake*: Negotiates cipher suites, validates SSL/TLS certificate chain, and establishes encrypted session key.
+  4. *HTTP Request*: Browser sends `GET / HTTP/1.1` request with headers.
+  5. *Server Processing*: Load Balancer routes request to app server; app server executes business logic and database queries.
+  6. *HTTP Response*: Server returns HTTP `200 OK` with HTML payload.
+  7. *DOM Rendering*: Browser parses HTML, fetches CSS/JS/images (via CDN), renders page layout.
 
 ---
 
-### 📈 Domain 6: Observability & Operations (15 Qs)
+# 🟡 Part 2: Intermediate Level (Scalability, Data & Distributed Patterns)
 
-116. **Golden Signals of Monitoring.**  
-    *Answer*: Latency (time to serve request), Traffic (demand/QPS), Errors (rate of failed requests), Saturation (resource utilization fullness).
+---
 
-117. **Blue-Green vs Canary Deployments.**  
-    *Answer*: Blue-Green switches 100% traffic instantly between identical Green (old) and Blue (new) environments. Canary routes 5% traffic to new release first, monitoring errors before full rollout.
+## 1. Frequently Tested Scalability Concepts
 
-118–150. *(Topics detailed: Distributed Tracing Context Propagation, Centralized Logging ELK Stack, Alert Throttling, Chaos Engineering, Service Mesh Envoy Sidecars).*
+### Load Balancing Strategies & Layer 4 vs. Layer 7
+
+```mermaid
+graph TD
+    Client[Clients] --> LB[Load Balancer]
+    LB -->|L4: TCP/IP Ports| App1[App Server 1]
+    LB -->|L7: HTTP Path / Headers| App2[App Server 2]
+    LB -->|L7: Cookie / Auth| App3[App Server 3]
+```
+
+- **Layer 4 (L4) Load Balancing**: Operates at Transport Layer (TCP/UDP). Routes traffic based on IP address and port number without inspecting payload content. Ultra-fast, low CPU overhead (e.g., HAProxy in TCP mode, AWS NLB).
+- **Layer 7 (L7) Load Balancing**: Operates at Application Layer (HTTP/HTTPS). Inspects HTTP headers, cookies, URL paths (`/api/v1/users` vs `/static/images`), and request payload. Supports smart routing, SSL termination, and rate limiting (e.g., NGINX, HAProxy, AWS ALB, Envoy).
+- **Balancing Algorithms**: Round Robin, Weighted Round Robin, Least Connections, IP Hash, Consistent Hashing.
+
+### Caching Strategies & Eviction Policies
+- **Cache Locations**: Browser cache, CDN edge, API Gateway cache, Application Redis/Memcached, Database query cache.
+- **Caching Patterns**:
+  - **Cache-Aside (Lazy Loading)**: App reads from cache; on cache miss, app queries DB, populates cache, and returns data. (Best for read-heavy workloads).
+  - **Write-Through**: App writes to cache; cache synchronously writes to DB before returning success. (Guarantees consistency, higher write latency).
+  - **Write-Back (Write-Behind)**: App writes to cache; cache asynchronously batches writes to DB. (Ultra-fast writes, risk of data loss on cache crash).
+  - **Write-Around**: App writes directly to DB, bypassing cache.
+- **Cache Eviction Policies**:
+  - **LRU (Least Recently Used)**: Evicts item not accessed for the longest time.
+  - **LFU (Least Frequently Used)**: Evicts item with the lowest access count.
+  - **FIFO (First In First Out)**: Evicts oldest item.
+
+### Relational (SQL) vs. Non-Relational (NoSQL) Databases
+
+| Dimension | SQL Databases (e.g., PostgreSQL, MySQL) | NoSQL Databases (e.g., DynamoDB, Cassandra, MongoDB) |
+| :--- | :--- | :--- |
+| **Data Structure** | Structured tables with fixed schemas and foreign keys | Key-Value, Document (JSON), Wide-Column, Graph |
+| **Scaling Model** | Vertical scaling (Scale-Up); Horizontal via Read Replicas & Sharding | Native Horizontal scaling (Scale-Out) via auto-sharding |
+| **ACID vs. BASE** | Strict ACID guarantees (Atomicity, Consistency, Isolation, Durability) | BASE properties (Basically Available, Soft-state, Eventual consistency) |
+| **Best For** | Financial transactions, complex JOINs, structured business models | High QPS reads/writes, unstructured/semi-structured data, global scale |
+
+### Database Partitioning & Sharding
+- **Vertical Partitioning**: Splitting tables by columns (e.g., moving large `user_bio` text column to a separate table).
+- **Horizontal Partitioning (Sharding)**: Splitting table rows across multiple database instances based on a **Shard Key**.
+  - *Range-Based Sharding*: Shard 1 ($A-M$), Shard 2 ($N-Z$). Easy to query ranges, but prone to hotspots.
+  - *Hash-Based Sharding*: `shard_id = hash(user_id) % num_shards`. Uniform distribution, but adding/removing nodes requires re-sharding all data!
+  - *Directory-Based Sharding*: Lookup table maps shard keys to database nodes.
+
+### Message Queues & Event Streaming (RabbitMQ vs. Apache Kafka)
+- **Message Queue (RabbitMQ)**: Point-to-point / Pub-Sub message broker. Messages are deleted once consumed and acknowledged. Ideal for complex task routing, background jobs, and worker queues.
+- **Event Streaming Platform (Apache Kafka)**: Distributed, partitioned, append-only disk commit log. Messages are retained based on configurable TTL. Consumers track their own reading **offset**. Ideal for high-throughput log aggregation, event sourcing, and real-time analytics pipelines.
+
+### Rate Limiting Algorithms
+1. **Token Bucket**: Bucket holds tokens; tokens added at fixed rate. Request requires 1 token. Allows burst traffic up to bucket capacity.
+2. **Leaky Bucket**: Requests enter FIFO queue; processed at fixed constant rate. Smooths out traffic bursts.
+3. **Fixed Window Counter**: Divides time into fixed windows (e.g., 1 minute). Resets count at window boundary. (Prone to $2\times$ burst traffic near boundary windows).
+4. **Sliding Window Counter**: Combines current window and previous window counts using weighted average. Highly accurate and memory-efficient.
+
+---
+
+## 2. Coding & Real Interview Expectations
+
+> [!IMPORTANT]
+> - In SDE-2 system design interviews, candidates are expected to write production-grade code for key components (e.g., custom LRU cache, Snowflake ID generator, Rate Limiter Lua script, or Consistent Hashing ring).
+> - Candidates must provide explicit **Capacity Estimations** (QPS, Storage, Bandwidth, Memory) before drawing architecture diagrams.
+
+---
+
+# 🔴 Part 3: Advanced Level (Distributed Architecture & Production Engineering)
+
+---
+
+## 1. Production Distributed Concepts
+
+### CAP & PACELC Theorems
+- **CAP Theorem**: In a network partition ($P$), a distributed system can guarantee either **Consistency** ($C$) or **Availability** ($A$), but NOT both.
+  - *CP Systems*: Prioritize consistency (e.g., HBase, MongoDB, Spanner). Rejects reads/writes if quorum cannot be reached during network partition.
+  - *AP Systems*: Prioritize availability (e.g., Cassandra, DynamoDB). Accepts reads/writes during partition, returning stale data or resolving conflicts later.
+- **PACELC Theorem**: Extension of CAP. **If there is a Partition ($P$)**, trade off Availability ($A$) vs Consistency ($C$); **Else ($E$)**, trade off Latency ($L$) vs Consistency ($C$).
+
+### Distributed Consensus (Raft vs. Paxos)
+Ensures multiple nodes agree on a single data value or state transition even if nodes fail or drop messages.
+- **Raft Algorithm**: Divided into three sub-problems:
+  1. *Leader Election*: Nodes can be Leader, Follower, or Candidate. Uses randomized election timeouts to elect a single leader.
+  2. *Log Replication*: Leader accepts client write commands, appends to log, and replicates to majority quorum of followers before committing.
+  3. *Safety*: Guarantees committed log entries are durable and strictly ordered.
+
+### Storage Engine Internals: B+ Tree vs. LSM-Tree
+
+| Feature | B+ Tree (e.g., InnoDB MySQL, PostgreSQL) | Log-Structured Merge-Tree (LSM) (e.g., Cassandra, RocksDB) |
+| :--- | :--- | :--- |
+| **Write Pattern** | In-place updates on fixed-size disk pages (Random disk writes) | Append-only write to Write-Ahead Log (WAL) & MemTable (RAM) |
+| **Disk Operations** | High Write Amplification due to page splits | Sequential disk writes; async SSTable compaction |
+| **Performance Profile**| Ultra-fast point reads & range scans ($O(\log N)$) | Extremely high write throughput; reads require Bloom Filters |
+
+```mermaid
+flowchart LR
+    Client -->|Write| WAL[Write-Ahead Log on Disk]
+    Client -->|Write| Mem[MemTable in RAM]
+    Mem -->|Flush when full| SST1[SSTable Level 0]
+    SST1 -->|Compaction| SST2[SSTable Level 1]
+```
+
+### Consistent Hashing & Virtual Nodes
+Solves data redistribution problem during node additions or removals in distributed caches/databases.
+- **Hash Ring**: Hashes keys and server IPs onto a 360-degree integer ring ($0$ to $2^{32}-1$). A key is assigned to the first server encountered moving clockwise.
+- **Virtual Nodes (v-nodes)**: Each physical node is mapped to multiple pseudo-random positions on the ring (e.g., 256 v-nodes per server).
+  - *Benefit*: Eliminates hotspots, guarantees uniform load distribution, and spreads workload evenly across all remaining servers when a node fails.
+
+```math
+\text{v-node count} = k \implies \text{Variance in load} \propto \frac{1}{\sqrt{k}}
+```
+
+### CRDTs (Conflict-free Replicated Data Types)
+Data structures that can be replicated concurrently across multiple nodes without central coordination, guaranteeing eventual convergence without write conflicts.
+- *PN-Counters*: Positive-Negative counters.
+- *LSEQ / RGA*: Sequence-based CRDTs used in collaborative real-time editors (e.g., Google Docs, Figma).
+
+### Distributed Locks & Fencing Tokens
+When using locks across distributed nodes (e.g., Redis Redlock):
+- **Problem**: A process holding a lock experiences a long GC pause (10 seconds). The lock expires, another process acquires the lock. The first process wakes up and executes invalid concurrent writes!
+- **Solution (Fencing Tokens)**: The lock manager returns a monotonically increasing **Fencing Token** with every lock grant. Storage nodes reject any incoming write whose fencing token is less than the highest token processed so far.
+
+---
+
+## 2. Senior & Staff Interview Expectations
+
+> [!TIP]
+> - Senior and Staff candidates must drive architectural discussions around **Multi-Region Active-Active deployments**, **Zero-Downtime database migrations**, **Cost optimization at scale**, and **Disaster Recovery (RPO / RTO targets)**.
+> - Must demonstrate deep awareness of subtle failure modes (e.g., cache stampedes, thundering herds, split-brain scenarios, and GC pauses).
+
+---
+
+## 3. High-Value Architecture Trade-off Matrix
+
+| Architecture Trade-off | Option A | Option B | Selection Criteria / Decision Rule |
+| :--- | :--- | :--- | :--- |
+| **Write Strategy** | Synchronous Replication | Asynchronous Replication | Choose Sync for financial ledgers (Zero data loss). Choose Async for social feeds (Low write latency). |
+| **Event Architecture** | Push Fan-Out (Write-side) | Pull Fan-Out (Read-side) | Choose Push for users with $<5\text{k}$ followers. Choose Pull for celebrity accounts ($>10\text{k}$ followers). |
+| **Consistency** | Strong Consistency | Eventual Consistency | Choose Strong for inventory counts & user authentication. Choose Eventual for view counts & social likes. |
+| **Communication** | gRPC (HTTP/2 Protobuf) | REST (HTTP/1.1 JSON) | Choose gRPC for high-throughput internal RPCs. Choose REST for public APIs & external web clients. |
+
+---
+
+Continue to [`Cheat_Sheet.md`](file:///s:/Interview_Guide/System_Design/Cheat_Sheet.md) for quick-revision tables, estimation formulas, and the step-by-step RESHADED framework! 🚀

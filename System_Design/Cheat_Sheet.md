@@ -1,185 +1,115 @@
 # ⚡ System Design Cheat Sheet & Quick Revision
 
-*Designed for 15-minute rapid review right before your technical interview.*
+*A rapid-revision reference guide designed to be read in under 15 minutes before an interview.*
 
 ---
 
-## 🚀 The RESHADED Framework (8 Steps to Ace System Design)
+## 📐 1. Back-of-the-Envelope Estimation Cheat Sheet
 
-Follow these steps sequentially to structure any system design discussion:
+### Core Numbers Every Engineer Must Know
 
-| Step | Phase | Action & Key Questions |
+```math
+1 \text{ Byte} = 8 \text{ bits} \quad|\quad 1 \text{ KB} = 10^3 \text{ Bytes} \quad|\quad 1 \text{ MB} = 10^6 \text{ Bytes} \quad|\quad 1 \text{ GB} = 10^9 \text{ Bytes} \quad|\quad 1 \text{ TB} = 10^{12} \text{ Bytes}
+```
+
+```math
+1 \text{ Day} = 86,400 \text{ seconds} \approx 10^5 \text{ seconds}
+```
+
+```math
+\text{Daily Traffic QPS} = \frac{\text{Daily Active Users (DAU)} \times \text{Requests per user per day}}{86,400}
+```
+
+```math
+\text{Peak QPS} \approx 2 \times \text{Average QPS}
+```
+
+### Latency Numbers Every Architect Must Know
+
+| Operation | Standard Time | Relative Scaled Analogy |
 | :--- | :--- | :--- |
-| **R** | **Requirements** | Clarify Functional (User actions) & Non-Functional (SLA, Latency, Availability vs Consistency, Scale). |
-| **E** | **Estimation** | Back-of-the-envelope calculations for QPS (Read/Write), Storage/day, Bandwidth, and RAM needed. |
-| **S** | **System Interface** | Define clean APIs (REST/gRPC request-response payloads & endpoints). |
-| **H** | **High-Level Design** | Sketch core blocks: Client -> DNS -> CDN -> Load Balancer -> API Gateway -> Services -> Caching -> Database -> Queue. |
-| **A** | **Analyze Bottlenecks** | Identify single points of failure (SPOF), hot partitions, DB read/write bottlenecks. |
-| **D** | **Deep Dive** | Zoom into critical component algorithms (e.g., Trie for Autocomplete, Consistent Hashing ring, Rate Limiter script). |
-| **E** | **Edge Cases & Faults** | Discuss network partitions, server crashes, GC pauses, duplicate requests, stale cache. |
-| **D** | **Deployment & Monitoring** | Metrics (Golden Signals: Latency, Traffic, Errors, Saturation), Alerting, Blue-Green / Canary rollouts. |
+| L1 Cache reference | $0.5 \text{ ns}$ | 1 Heartbeat |
+| Main Memory (RAM) reference | $100 \text{ ns}$ | 2 Minutes |
+| Read 1MB sequentially from RAM | $250 \text{ }\mu\text{s}$ | 3 Days |
+| Read 1MB sequentially from SSD | $1 \text{ ms}$ | 12 Days |
+| Read 1MB sequentially from HDD | $20 \text{ ms}$ | 8 Months |
+| Cross-datacenter Round-Trip (WAN) | $150 \text{ ms}$ | 5 Years |
+
+### Storage & Bandwidth Quick Calculations
+- **1 Million Daily Active Users (DAU)** sending 10 requests/day $\rightarrow 100 \text{ QPS average}$.
+- **100 Million DAU** sending 10 requests/day $\rightarrow 10,000 \text{ QPS average} \implies 20,000 \text{ Peak QPS}$.
+- **Storage for 100M daily text updates (1KB each)**:
+  $$100 \times 10^6 \times 1 \text{ KB} = 100 \text{ GB/day} \implies 36.5 \text{ TB/year}$$
 
 ---
 
-## 📊 Back-of-the-Envelope Estimation Quick Reference
+## 🛠️ 2. The RESHADED Framework for System Design Interviews
 
-### Standard Constants & Math Shortcuts
-- **Time Conversions**:
-  - $1 \text{ day} = 86,400 \text{ seconds} \approx 10^5 \text{ seconds}$
-  - $1 \text{ million requests / day} \approx 12 \text{ requests/sec}$
-  - $100 \text{ million requests / day} \approx 1,200 \text{ requests/sec}$
-  - $1 \text{ billion requests / day} \approx 12,000 \text{ requests/sec}$
-- **Latency Numbers Every Engineer Should Know**:
-  - L1 cache reference: $0.5 \text{ ns}$
-  - Main memory (RAM) reference: $100 \text{ ns}$
-  - Read $1 \text{ MB}$ sequentially from RAM: $250 \text{ } \mu\text{s}$
-  - Read $1 \text{ MB}$ sequentially from NVMe SSD: $1 \text{ ms}$
-  - Read $1 \text{ MB}$ sequentially from HDD: $20 \text{ ms}$
-  - Round trip within same datacenter: $0.5 \text{ ms}$
-  - Round trip US to Europe (cross-Atlantic): $150 \text{ ms}$
+```mermaid
+flowchart TD
+    R[R: Requirements Clarification] --> E[E: Estimation & Scale]
+    E --> S[S: System Interface & API Design]
+    S --> H[H: High-Level Architecture Diagram]
+    H --> A[A: Architecture Deep-Dive]
+    A --> D[D: Database Schema & Storage Choice]
+    D --> E2[E: Bottlenecks & Edge Cases]
+    E2 --> D2[D: Trade-offs & Production Tuning]
+```
 
-### Estimation Formulas
-- **Peak QPS**: $\text{Average QPS} \times 2 \text{ to } 5$
-- **Storage Requirement (5 Years)**: $\text{Daily Writes} \times \text{Size per Record} \times 365 \times 5 \times \text{Replication Factor (3)}$
-- **RAM Needed for Cache**: Apply Pareto Principle (80/20 Rule) -> Cache $20\%$ of daily read volume.
-
----
-
-## 🗄️ Storage Engine & Database Selection Matrix
-
-| Storage Type | Characteristics | Best Use Cases | Examples |
-| :--- | :--- | :--- | :--- |
-| **In-Memory KV** | Ultra-low latency ($<1\text{ms}$), volatile/persistent. | Caching, session store, rate limiters, leaderboards. | Redis, Memcached |
-| **Relational DB (RDBMS)** | ACID, complex joins, rigid schema, secondary indexes. | Financial transactions, orders, core user metadata. | PostgreSQL, MySQL |
-| **Document DB** | Flexible JSON schema, horizontal scale, single-key access. | User profiles, product catalogs, content management. | MongoDB, Couchbase |
-| **Columnar / Wide-Column** | LSM-tree based, high write throughput, distributed. | Time-series data, event logging, telemetry, IoT. | Cassandra, ScyllaDB, HBase |
-| **Columnar OLAP** | Compressed vector columns, analytical queries. | Data warehousing, real-time analytics, reporting. | ClickHouse, Snowflake, Redshift |
-| **Search Engine** | Inverted index, fuzzy search, full-text ranking. | Autocomplete, log search, product catalog search. | Elasticsearch, OpenSearch |
-| **Graph DB** | Nodes & edges, fast traversal without expensive joins. | Social networks, fraud networks, knowledge graphs. | Neo4j, AWS Neptune |
-| **Vector DB** | High-dimensional ANN indexing (HNSW, IVF). | Semantic search, LLM embeddings, RAG apps. | Pinecone, Milvus, Qdrant |
+| Step | Goal | Key Questions to Ask |
+| :--- | :--- | :--- |
+| **R - Requirements** | Define Functional & Non-Functional boundaries | "What are top 3 core features? What latency SLA (e.g., P99 < 200ms)? Availability target (99.99%)?" |
+| **E - Estimation** | Determine scale & resource footprint | "What is DAU/MAU? Read-to-Write ratio? Peak QPS? Data retention policy?" |
+| **S - System APIs** | Define explicit endpoints & payloads | "REST/gRPC format? `POST /api/v1/resource`, input parameters, response structures, headers?" |
+| **H - High-Level Design**| Draw block diagram of components | Draw Client $\rightarrow$ CDN/DNS $\rightarrow$ API Gateway $\rightarrow$ Load Balancer $\rightarrow$ Stateless Web App $\rightarrow$ Cache $\rightarrow$ DB. |
+| **A - Architecture Dive**| Detail specific complex components | Deep dive into Message Queues, Stateful Connections, Search Indexes, or Fan-out engines. |
+| **D - Data Schema** | Select DB type & table structures | Choose SQL vs NoSQL vs Columnar. Define Primary Keys, Partition Keys, Indexing strategies. |
+| **E - Edge Cases** | Identify failure modes & bottlenecks | Single point of failures, rate limiting, cache stampedes, network partitions, split-brain scenarios. |
+| **D - Decisions/Tradeoffs**| Justify technical choices | "Why Cassandra over Postgres? Why gRPC over REST? Trade-offs between latency vs consistency." |
 
 ---
 
-## ⚔️ High-Value Comparison Tables
+## 📊 3. High-Value Technology Comparison Tables
 
-### 1. Protocols & API Paradigms
-| Metric | REST | gRPC | GraphQL |
-| :--- | :--- | :--- | :--- |
-| **Protocol** | HTTP/1.1 or HTTP/2 | HTTP/2 | HTTP/1.1 or HTTP/2 |
-| **Payload** | JSON (Text) | Protobuf (Binary) | JSON (Text) |
-| **Over-fetching** | Common | Minimal | None (Client specifies fields) |
-| **Performance** | Moderate | Ultra-Fast ($5\times-10\times$ smaller) | Moderate |
-| **Streaming** | No | Bidirectional streaming | Via Subscriptions |
+### SQL vs NoSQL vs Columnar vs Vector Databases
 
-### 2. Synchronization & Real-Time Delivery
-| Technique | Direction | Overhead | Reconnection | Best Use Case |
+| Database Category | Key Examples | Storage Model | Best Use Case | Avoid When |
 | :--- | :--- | :--- | :--- | :--- |
-| **Long Polling** | Bi-directional simulation | High (HTTP re-creation) | Manual | Legacy fallback |
-| **WebSockets** | Full-duplex | Low (Single TCP frame) | Automatic / Custom | Real-time chat, multiplayer games |
-| **SSE** | Server-to-Client | Low (Standard HTTP stream) | Automatic built-in | News feeds, stock tickers |
+| **Relational (SQL)** | PostgreSQL, MySQL | Row-based B+ Trees | Financial transactions, strict ACID | Petabyte-scale unstructured writes |
+| **Key-Value** | Redis, DynamoDB | Hash tables, LSM Trees | Caching, session stores, user profiles | Complex multi-table JOINs |
+| **Wide-Column** | Cassandra, ScyllaDB | Append-only SSTables | Time-series, telemetry, high-write messaging | Low-latency ad-hoc SQL queries |
+| **Document** | MongoDB, DocumentDB | Nested JSON / BSON | Dynamic schemas, content catalogs | Highly relational graph models |
+| **Columnar Analytics**| ClickHouse, Snowflake | Column-oriented vectors | OLAP analytics, aggregate telemetry | High-frequency single-row updates |
+| **Vector DB** | Pinecone, Milvus, Qdrant | HNSW graph embedding | LLM RAG, similarity search | Traditional key-value lookups |
+
+### Message Queues vs Event Streams
+
+| Dimension | Message Queue (e.g., RabbitMQ) | Event Stream (e.g., Apache Kafka) |
+| :--- | :--- | :--- |
+| **Message Lifetime** | Deleted immediately after consumer ACK | Retained on disk until TTL expiration |
+| **Consumption Model**| Push-based to competing workers | Pull-based by consumer groups using offsets |
+| **Ordering Guarantee**| Order preserved per queue, lost on retries | Strict ordering guaranteed **per partition** |
+| **Scalability** | Scale workers per queue | Scale throughput via log partitioning |
 
 ---
 
-## 🎨 Essential Mermaid Diagrams
+## 💡 4. Top Best Practices & Critical Architectural Rules
 
-### 1. High-Level Distributed System Architecture Template
-
-```mermaid
-graph TD
-    Client[Client App / Web Browser] --> DNS[DNS Resolver]
-    DNS --> CDN[CDN Edge Nodes]
-    Client --> LB[Global Load Balancer]
-    LB --> GW[API Gateway]
-    GW --> Auth[Auth Service]
-    GW --> Web[Web Application Cluster]
-    Web --> Cache[(Redis Cache Cluster)]
-    Web --> MQ[Kafka Message Queue]
-    MQ --> Workers[Async Background Workers]
-    Workers --> DB[(Primary SQL DB)]
-    Workers --> ObjectStore[(S3 Object Storage)]
-    Cache --> DB
-    DB --> Replica[(Read Replicas)]
-    Web --> Replica
-```
-
-### 2. CAP & PACELC Theorem Decision Tree
-
-```mermaid
-graph TD
-    CAP[Network Partition Occurs?]
-    CAP -- Yes --> Choice1{Choose Preference}
-    Choice1 -- CP --> CP_Res[CP: Spanner, HBase, MongoDB<br/>Consistency over Availability]
-    Choice1 -- AP --> AP_Res[AP: Cassandra, DynamoDB, Couchbase<br/>Availability over Consistency]
-    CAP -- No (Normal State) --> Choice2{Choose Preference}
-    Choice2 -- Latency --> L_Res[Latency: DynamoDB<br/>Low Latency over Consistency]
-    Choice2 -- Consistency --> C_Res[Consistency: Relational DBs<br/>Strong Consistency over Latency]
-```
-
-### 3. Consistent Hashing Ring & Virtual Nodes
-
-```mermaid
-graph TD
-    subgraph HashRing [32-bit Hash Ring Range: 0 to 2^32-1]
-        NodeA_v1["Node A (V-Node 1)"] --> Key1["Key: user_1029"]
-        Key1 --> NodeB_v1["Node B (V-Node 1)"]
-        NodeB_v1 --> Key2["Key: post_9921"]
-        Key2 --> NodeC_v1["Node C (V-Node 1)"]
-        NodeC_v1 --> NodeA_v2["Node A (V-Node 2)"]
-        NodeA_v2 --> NodeA_v1
-    end
-    style NodeA_v1 fill:#f9f,stroke:#333
-    style NodeB_v1 fill:#ff9,stroke:#333
-    style NodeC_v1 fill:#9f9,stroke:#333
-    style NodeA_v2 fill:#f9f,stroke:#333
-```
-
-### 4. Quorum Read / Write Sequence ($N=3, W=2, R=2$)
-
-```mermaid
-sequenceDiagram
-    participant C as Client
-    participant Coord as Coordinator Node
-    participant R1 as Replica 1
-    participant R2 as Replica 2
-    participant R3 as Replica 3
-    
-    rect rgb(230, 245, 255)
-    Note over C, R3: WRITE OPERATION (W=2, N=3)
-    C->>Coord: Write (key="user_1", val="v2")
-    Coord->>R1: Write v2 (ver=2)
-    Coord->>R2: Write v2 (ver=2)
-    Coord->>R3: Write v2 (ver=2)
-    R1-->>Coord: ACK Write
-    R2-->>Coord: ACK Write
-    Note over Coord: W=2 Acks received! Return Success immediately.
-    Coord-->>C: 200 Write OK
-    end
-    
-    rect rgb(255, 245, 230)
-    Note over C, R3: READ OPERATION (R=2, N=3)
-    C->>Coord: Read (key="user_1")
-    Coord->>R2: Read
-    Coord->>R3: Read
-    R2-->>Coord: val="v2" (ver=2)
-    R3-->>Coord: val="v1" (ver=1)
-    Note over Coord: R=2 responses received. Compare versions -> v2 > v1.
-    Coord-->>C: Return Latest Value "v2"
-    Coord->>R3: Async Read Repair (Update R3 to v2)
-    end
-```
+> [!IMPORTANT]
+> 1. **Make Stateless Web Tiers**: Store session state in Redis, never in app server memory.
+> 2. **Design for Idempotency**: All mutating write APIs must accept an `Idempotency-Key` header to prevent duplicate charges or operations on network retry.
+> 3. **Prevent Cache Stampedes**: Use distributed locks or probabilistic early expiration (XFetch) for hot keys.
+> 4. **Decouple Slow Workflows**: Offload email sending, video transcoding, and ML scoring to asynchronous Kafka message queues.
+> 5. **Enforce Rate Limiting & Circuit Breakers**: Protect downstream services from thundering herds using Envoy rate limiters and Resilience4j circuit breakers.
 
 ---
 
-## 🎯 Interview Day Strategy & Emergency Recovery
+## 🧠 5. Memory Tricks & Quick Notes
 
-### 💡 Top 5 Golden Rules
-1. **Never Start Drawing Without Clarifying Scope**: Spending 3 minutes confirming requirements prevents 30 minutes of designing the wrong system.
-2. **Drive the Conversation**: Proactively outline what you will cover using the RESHADED framework.
-3. **Explicitly State Assumptions**: Say "I am assuming $100\text{M}$ DAU based on standard social apps" rather than silently calculating.
-4. **Quantify Trade-offs**: Never say "X is better than Y". Say "X gives us $<10\text{ms}$ read latency at the cost of eventual consistency, whereas Y gives ACID compliance at lower write throughput".
-5. **Address Bottlenecks Proactively**: Don't wait for the interviewer to point out a single point of failure; call it out and fix it with redundancy.
+- 💡 **DADS**: **D**ata Storage, **A**PI Design, **D**istributed Systems, **S**calability.
+- 💡 **BASE**: **B**asically **A**vailable, **S**oft-state, **E**ventual consistency (NoSQL philosophy).
+- 💡 **SOLID**: Applies to System Design too! Decouple services by single responsibility.
+- 💡 **4 Golden Signals**: **Latency**, **Traffic**, **Errors**, **Saturation**.
+- 💡 **PACELC**: **P**artition $\implies$ (**A**vailability vs **C**onsistency); **E**lse $\implies$ (**L**atency vs **C**onsistency).
 
-### 🚨 What to Do if You Get Stuck
-- **Stuck on Scale?** -> Break down into reads vs writes. Cache reads, queue writes.
-- **Stuck on Data Model?** -> Ask: "What are the primary query access patterns?" (Access by ID vs range scan vs fuzzy search).
-- **Stuck on Latency?** -> Add CDN for static, Redis for dynamic data, move slow processing to Kafka background workers.
+Proceed to [`Tools_Matrix.md`](file:///s:/Interview_Guide/System_Design/Tools_Matrix.md) for technology selection matrices or [`Top_Questions.md`](file:///s:/Interview_Guide/System_Design/Top_Questions.md) for exhaustive question breakdowns! 🚀

@@ -1,67 +1,85 @@
-# 📚 Curated System Design Resources & References
+# 📖 Handpicked System Design Learning Resources
 
-*Handpicked, high-quality whitepapers, books, lectures, repositories, and interactive tools for mastering distributed systems and system design interviews.*
-
----
-
-## 📜 1. Classic Distributed Systems Whitepapers
-
-Every Senior & Staff Engineer candidate should read these landmark papers to understand foundational distributed system concepts directly from the pioneers.
-
-| Paper Title | Authors / Organization | Why It Is Worth Reading |
-| :--- | :--- | :--- |
-| **[Dynamo: Amazon's Highly Available Key-Value Store](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp07.pdf)** | Werner Vogels et al. (Amazon) | The foundational paper behind NoSQL DBs. Teaches consistent hashing, vector clocks, quorum consensus, hinted handoff, and Merkle trees. |
-| **[Spanner: Google's Globally-Distributed Database](https://research.google/pubs/pub39966/)** | James Corbett et al. (Google) | Shows how external consistency is achieved at global scale using TrueTime API, atomic clocks, GPS receivers, and 2PC + Paxos. |
-| **[In Search of an Understandable Consensus Algorithm (Raft)](https://raft.github.io/raft.pdf)** | Diego Ongaro & John Ousterhout (Stanford) | Essential guide to distributed consensus. Far easier to understand than Paxos; explains leader election, log replication, and cluster safety. |
-| **[The Google File System (GFS)](https://research.google/pubs/pub51/)** | Sanjay Ghemawat et al. (Google) | Landmarked distributed block storage design. Explains master node metadata management, chunk servers, and append-heavy workloads. |
-| **[Kafka: a Distributed Messaging System for Log Processing](https://net.pku.edu.cn/~tongwe/CS199/Kafka.pdf)** | Jay Kreps et al. (LinkedIn) | Teaches distributed commit logs, page cache utilization, zero-copy network reads, and consumer offset tracking. |
-| **[Bigtable: A Distributed Storage System for Structured Data](https://research.google/pubs/pub27898/)** | Chang et al. (Google) | Explains LSM trees, SSTables, MemTables, and sparse wide-column storage. |
+*A curated collection of the highest-rated books, landmark whitepapers, courses, documentation, YouTube channels, and interactive practice platforms for System Design.*
 
 ---
 
-## 📖 2. Recommended Books
+## 📚 1. Essential Books
 
-### 1. **Designing Data-Intensive Applications (DDIA)** – *Martin Kleppmann*
-- **Why Read It**: Known as the "Bible of Distributed Systems". Absolutely mandatory for SDE-2 and Senior Engineers.
-- **Key Chapters**:
-  - Chapter 3: Storage Engines (B-Trees vs LSM Trees)
-  - Chapter 5: Replication (Leader, Multi-Leader, Leaderless)
-  - Chapter 6: Partitioning & Sharding
-  - Chapter 7–9: Transactions, CAP, Consensus & Linearizability
+### 1. Designing Data-Intensive Applications (DDIA) by Martin Kleppmann
+- **Why It's Worth Reading**: The undisputed "Bible" of distributed systems engineering. Provides unmatched depth into database internals (LSM-trees vs B-trees), encoding formats, replication lag, consensus algorithms (Raft/Paxos), and transaction isolation levels.
+- **Key Chapters to Master**:
+  - Chapter 3: Storage and Retrieval
+  - Chapter 5: Replication
+  - Chapter 6: Partitioning / Sharding
+  - Chapter 7: Transactions & Isolation Levels
+  - Chapter 9: Consistency and Consensus
 
-### 2. **System Design Interview – An Insider's Guide (Vol 1 & 2)** – *Alex Xu*
-- **Why Read It**: The best step-by-step guide for whiteboarding and interview execution. Excellent block diagrams, capacity estimates, and clear API design workflows.
+### 2. System Design Interview – An Insider's Guide (Volumes 1 & 2) by Alex Xu
+- **Why It's Worth Reading**: Practical, interview-focused step-by-step breakdowns of classic design problems (URL Shortener, Rate Limiter, Payment System, Stock Exchange, S3 storage). Excellent for mastering structural whiteboard presentations.
 
-### 3. **Building Microservices (2nd Edition)** – *Sam Newman*
-- **Why Read It**: Teaches microservice decomposition, service boundaries, Saga transactions, API gateways, and async event-driven patterns.
+### 3. System Design Interview – Step-By-Step Guide by ByteByteGo
+- **Why It's Worth Reading**: Visual diagrams, real-world trade-off analyses, and architecture templates specifically tailored for FAANG SDE-2 and Senior loops.
 
----
-
-## 🎓 3. University Courses & Video Lectures
-
-- **[MIT 6.824: Distributed Systems](https://www.youtube.com/playlist?list=PLrw6a1wE39ggMaYeDXULTad5UDA51tMTl)** (Prof. Robert Morris)
-  - The single best free video course on distributed systems. Includes lab assignments in Go (building Raft consensus from scratch).
-- **[CMU 15-445/645: Database Systems](https://15445.courses.cs.cmu.edu/)** (Prof. Andy Pavlo)
-  - Deep dive into database internal architectures (B+ Trees, Query Execution, Concurrency Control, Logging & Recovery).
-- **[System Design Interview Channel (ByteByteGo)](https://www.youtube.com/@ByteByteGo)**
-  - Clear visual animated breakdowns of real-world architecture patterns.
+### 4. Designing Distributed Systems by Brendan Burns
+- **Why It's Worth Reading**: Written by the co-founder of Kubernetes. Explains modern containerized microservice patterns (Sidecar, Ambassador, Adapter, Leader Election).
 
 ---
 
-## 🛠️ 4. GitHub Repositories & Interactive Tools
+## 📄 2. Landmark Distributed Systems Whitepapers
 
-- **[donnemartin/system-design-primer](https://github.com/donnemartin/system-design-primer)**
-  - Over 250k stars. Comprehensive open-source guide covering all core components and flashcards.
-- **[Raft Consensus Interactive Visualizer](https://raft.github.io/)**
-  - Interactive visualization of leader election, log replication, and partition failure scenarios in Raft.
-- **[Kafka Internals & Architecture Visualizer](https://softwaremill.com/kafka-visualized/)**
-  - Visual tool to experiment with topic partitioning, consumer group rebalancing, and offsets.
+| Whitepaper | Published By | Key Technical Concepts Covered | Why Read It |
+| :--- | :--- | :--- | :--- |
+| **Amazon Dynamo (2007)** | Amazon | Consistent Hashing, Vector Clocks, Tunable Quorum, Gossip Protocol | Foundation of modern NoSQL databases (Cassandra, DynamoDB). |
+| **Google Spanner (2012)** | Google | TrueTime API (Atomic Clocks + GPS), External Consistency, Paxos | Teaches how global transactions work without lock contention. |
+| **Google File System (GFS) (2003)** | Google | ChunkServers, Master Node, Append-only logging | Foundation of modern distributed big data storage (HDFS). |
+| **In Search of an Understandable Consensus Algorithm (Raft)** | Stanford | Leader Election, Log Replication, Safety | Clearer explanation of consensus compared to Paxos. |
+| **Apache Kafka Paper (2011)** | LinkedIn | Append-only commit log, Zero-Copy `sendfile`, Partitioning | Teaches high-throughput event streaming design. |
 
 ---
 
-## 🌐 5. Engineering Blogs to Follow
+## 🎓 3. Courses & University Lectures
 
-1. **[Netflix TechBlog](https://netflixtechblog.com/)**: Microservice resiliency, chaos engineering, CDN edge performance.
-2. **[Uber Engineering Blog](https://www.uber.com/blog/engineering/)**: Geospatial indexing (H3), real-time dispatch, Ringpop.
-3. **[Meta Engineering](https://engineering.fb.com/)**: TAO graph store, Memcached at scale, feed ranking pipelines.
-4. **[AWS Architecture Blog](https://aws.amazon.com/blogs/architecture/)**: Cloud native patterns, serverless scaling, multi-region deployments.
+### 1. MIT 6.824: Distributed Systems (Prof. Robert Morris)
+- **Link / Source**: MIT OpenCourseWare & YouTube
+- **Why Use It**: World-class university course covering Go implementations of Raft, MapReduce, Spanner, and fault-tolerant storage. Includes hands-on coding labs.
+
+### 2. Princeton Algorithms & Systems Lectures
+- **Why Use It**: Deep dive into fundamental computer science structures (Tries, Quadtrees, Hashing algorithms, Graph traversals).
+
+---
+
+## 📺 4. Top YouTube Channels
+
+1. **ByteByteGo (Alex Xu)**: Visual animated system design explanations and architecture breakdowns.
+2. **System Design Interview (GKCS - Gaurav Sen)**: Excellent deep dives into distributed locks, rate limiters, message queues, and load balancers.
+3. **Hussein Nasser**: Database internals, networking (HTTP/1, HTTP/2, HTTP/3, gRPC, WebSockets), proxy servers, and Linux networking.
+4. **Martin Kleppmann Lectures**: Author of DDIA explaining distributed consistency, CRDTs, and event-driven architecture.
+5. **Asana Engineering / Tech Dummies (Sathish)**: Real-world engineering blog reviews and system walkthroughs.
+
+---
+
+## 🌐 5. Interactive Practice Platforms & Repositories
+
+### 1. System Design Primer (donnemartin / system-design-primer on GitHub)
+- **Why Use It**: Top open-source GitHub repository for system design prep. Features comprehensive flashcards, architecture diagrams, and back-of-the-envelope estimations.
+
+### 2. High Scalability Blog (`highscalability.com`)
+- **Why Use It**: Case studies detailing real-world architectural evolutions of tech giants (How Netflix scales to millions of streams, How Uber tracks drivers).
+
+### 3. Exponent (TryExponent.com)
+- **Why Use It**: Mock interview videos featuring real FAANG candidates and hiring managers solving system design problems live.
+
+---
+
+## 🎯 6. Recommended Study Order Strategy
+
+```mermaid
+flowchart TD
+    Step1[Read DDIA Chapters 3, 5, 6, 7 & 9] --> Step2[Watch MIT 6.824 Raft & Consensus Lectures]
+    Step2 --> Step3[Master Cheat_Sheet.md & Tools_Matrix.md]
+    Step3 --> Step4[Solve Top_Questions.md & Company_Questions.md]
+    Step4 --> Step5[Practice Mini-Problems & Code in Practice_Questions.md]
+```
+
+Good luck with your System Design Interview Preparation! 🚀
