@@ -1,6 +1,6 @@
-# 🏋️ Machine Learning Practice Questions & Interactive Solutions
+# 🏋️ Machine Learning Practice Questions & Solutions
 
-This document contains **ALL** practice question banks (150+ Theory, 100+ Coding, 100 MCQs, Scenario, Production, Debugging, Output Prediction, and Best Practices). Every question is interactive and collapsible using `<details><summary>`.
+This document contains **ALL** practice question banks (150+ Theory, 100+ Coding, 100 MCQs, Scenario Questions, Production Problems, Debugging Problems, Output Prediction, and Best Practices).
 
 ---
 
@@ -18,443 +18,434 @@ This document contains **ALL** practice question banks (150+ Theory, 100+ Coding
 
 ## 1. Theory Questions (150+)
 
-### Supervised Learning (40 Questions)
-
-<details>
-<summary><b>1. What is linear regression? State its assumptions.</b></summary>
-
-#### 💡 Simple Explanation
-Linear regression draws a straight line through data points to predict a continuous value (e.g. house price from size).
-
-#### 🎯 Best Way to Answer in an Interview
-State the **LINE** assumptions: Linearity, Independence of residuals, Normality of residuals, Equal variance (Homoscedasticity).
-
-#### 📝 Detailed Answer
-Minimizes MSE: $\frac{1}{2N}\sum (y_i - (w^T x_i + b))^2$. Closed form solution: $w = (X^T X)^{-1} X^T y$.
-</details>
-
-<details>
-<summary><b>2. How do you derive the normal equation for linear regression?</b></summary>
-
-#### 💡 Simple Explanation
-Set the matrix derivative of Mean Squared Error with respect to weights to zero and solve for $w$.
-
-#### 🎯 Best Way to Answer in an Interview
-1. Write loss $\mathcal{L}(w) = (Xw - y)^T (Xw - y) = w^T X^T X w - 2 w^T X^T y + y^T y$.
-2. Take derivative $\frac{\partial \mathcal{L}}{\partial w} = 2 X^T X w - 2 X^T y = 0$.
-3. Rearrange to get Normal Equation: $w = (X^T X)^{-1} X^T y$.
-</details>
-
-<details>
-<summary><b>3. What is the difference between R² and adjusted R²?</b></summary>
-
-#### 💡 Simple Explanation
-$R^2$ measures percentage of target variance explained by the model, but it *always* increases when you add more features (even useless ones). Adjusted $R^2$ penalizes adding useless features!
-
-#### 🎯 Best Way to Answer in an Interview
-$R^2 = 1 - \frac{SS_{\text{res}}}{SS_{\text{tot}}}$. $\text{Adjusted } R^2 = 1 - \left[ \frac{(1-R^2)(N-1)}{N-p-1} \right]$ where $p$ is feature count. Use Adjusted $R^2$ for multiple regression feature selection.
-</details>
-
-<details>
-<summary><b>4. What is logistic regression? How does it estimate probabilities?</b></summary>
-
-#### 💡 Simple Explanation
-Squashes a linear function output through an S-shaped Sigmoid curve to predict binary class probabilities between 0 and 1.
-</details>
-
-<details>
-<summary><b>5. Explain the sigmoid function and its role in logistic regression.</b></summary>
-
-#### 💡 Simple Explanation
-$\sigma(z) = \frac{1}{1 + e^{-z}}$. Maps any real number from $(-\infty, \infty)$ to $(0, 1)$. Its derivative is $\sigma'(z) = \sigma(z)(1 - \sigma(z))$.
-</details>
-
-<details>
-<summary><b>6. Derive the log loss (cross‑entropy) for logistic regression.</b></summary>
-
-#### 💡 Simple Explanation
-From Bernoulli Likelihood $L = \prod \hat{y}^{y_i} (1-\hat{y})^{1-y_i}$, taking the negative logarithm gives Binary Cross-Entropy loss: $\mathcal{L} = -\sum [y \log \hat{y} + (1-y)\log(1-\hat{y})]$.
-</details>
-
-<details>
-<summary><b>7. Compare linear and logistic regression: when to use each?</b></summary>
-
-#### 💡 Simple Explanation
-Linear regression is for continuous target numbers (prices, temperatures). Logistic regression is for discrete categories (spam/ham, pass/fail).
-</details>
-
-<details>
-<summary><b>8. What is the decision boundary of logistic regression?</b></summary>
-
-#### 💡 Simple Explanation
-The line/hyperplane where predicted probability is exactly 50% ($w^T X + b = 0$).
-</details>
-
-<details>
-<summary><b>9. What is maximum likelihood estimation (MLE) in logistic regression?</b></summary>
-
-#### 💡 Simple Explanation
-Finding parameter weights $w$ that maximize the probability of observing the training data labels.
-</details>
-
-<details>
-<summary><b>10. What is regularization in logistic regression? (L1/L2)</b></summary>
-
-#### 💡 Simple Explanation
-Adding weight penalties ($\lambda \sum |w_i|$ for L1, $\lambda \sum w_i^2$ for L2) to prevent large weights and combat overfitting.
-</details>
-
-<details>
-<summary><b>11. How does Support Vector Machine (SVM) find the optimal hyperplane?</b></summary>
-
-#### 💡 Simple Explanation
-Finds the decision boundary hyperplane that maximizes the margin (buffer zone distance) to the closest data points of either class.
-</details>
-
-<details>
-<summary><b>12. Explain the concept of support vectors and the margin.</b></summary>
-
-#### 💡 Simple Explanation
-Support vectors are the critical data points lying directly on the margin boundaries that define the position of the decision hyperplane.
-</details>
-
-<details>
-<summary><b>13. What is the kernel trick? Provide examples of kernels (linear, RBF).</b></summary>
-
-#### 💡 Simple Explanation
-Computes high-dimensional dot-products implicitly using a kernel function $K(x_i, x_j) = \exp(-\gamma \|x_i - x_j\|^2)$ without calculating expensive high-dimensional coordinates.
-</details>
-
-<details>
-<summary><b>14. When would you use SVM over logistic regression?</b></summary>
-
-#### 💡 Simple Explanation
-Use SVM when data has a complex non-linear boundary (via RBF kernel) or high-dimensional sparse features with a clear margin.
-</details>
-
-<details>
-<summary><b>15. How does k‑Nearest Neighbors (k‑NN) work? What are the effects of different k values?</b></summary>
-
-#### 💡 Simple Explanation
-Looks at the $k$ closest neighboring points and votes on the class label. Small $k$ (e.g. 1) = high variance/overfitting. Large $k$ = high bias/underfitting.
-</details>
-
-<details>
-<summary><b>16. Why is feature scaling important for k‑NN and SVM?</b></summary>
-
-#### 💡 Simple Explanation
-Both rely on Euclidean distance; large unscaled features (e.g. salary $100,000) will dominate small scaled features (e.g. age 25).
-</details>
-
-<details>
-<summary><b>17. What is the curse of dimensionality in k‑NN?</b></summary>
-
-#### 💡 Simple Explanation
-In high dimensions, data points become sparse and Euclidean distances between all points become almost equal, degrading $k$-NN accuracy.
-</details>
-
-<details>
-<summary><b>18. Explain Decision Tree splitting criteria: Gini impurity and entropy.</b></summary>
-
-#### 💡 Simple Explanation
-- Gini: $1 - \sum p_i^2$ (computationally faster).
-- Entropy: $-\sum p_i \log_2(p_i)$ (information content). Both measure class purity in tree node splits.
-</details>
-
-<details>
-<summary><b>19. How does a decision tree handle both categorical and numerical features?</b></summary>
-
-#### 💡 Simple Explanation
-Numerical: sorts values and tests split thresholds $x_i > c$. Categorical: creates subset category splits.
-</details>
-
-<details>
-<summary><b>20. What is pruning in decision trees and why is it needed?</b></summary>
-
-#### 💡 Simple Explanation
-Trimming useless branches to stop the tree from memorizing noise and over-fitting training data.
-</details>
-
-<details>
-<summary><b>21. Explain Random Forest algorithm; why does it reduce variance?</b></summary>
-
-#### 💡 Simple Explanation
-Ensemble of decision trees trained on bootstrap samples with random feature selection. Averaging independent trees reduces total variance by factor $1/M$.
-</details>
-
-<details>
-<summary><b>22. What is out‑of‑bag (OOB) error in Random Forest?</b></summary>
-
-#### 💡 Simple Explanation
-Evaluating each tree on the ~37% of bootstrap samples it never saw during training, giving a free validation score without cross-validation.
-</details>
-
-<details>
-<summary><b>23. How does Random Forest handle missing data?</b></summary>
-
-#### 💡 Simple Explanation
-Uses proximity matrices based on node co-occurrence or median imputation across sample partitions.
-</details>
-
-<details>
-<summary><b>24. What is Boosting? Explain AdaBoost.</b></summary>
-
-#### 💡 Simple Explanation
-Sequential ensembling where subsequent decision stumps increase weights on misclassified samples from prior rounds.
-</details>
-
-<details>
-<summary><b>25. Explain Gradient Boosting Machines; what is the “gradient” in function space?</b></summary>
-
-#### 💡 Simple Explanation
-Sequential trees fit the pseudo-residuals (negative loss gradients $-\frac{\partial \mathcal{L}}{\partial f(x)}$) of the current ensemble predictions.
-</details>
-
-<details>
-<summary><b>26. Compare XGBoost, LightGBM, and CatBoost – key innovations.</b></summary>
-
-#### 💡 Simple Explanation
-- XGBoost: 2nd order Taylor gradient expansion + $L_1/L_2$ regularization.
-- LightGBM: Leaf-wise growth + GOSS (gradient sampling) + EFB (feature bundling).
-- CatBoost: Ordered boosting + native target encoding for categorical features.
-</details>
-
-<details>
-<summary><b>27. What is stacking in ensemble learning?</b></summary>
-
-#### 💡 Simple Explanation
-Training a meta-model (e.g. Logistic Regression) on the out-of-fold predictions of multiple base models (XGBoost, Neural Net, Random Forest).
-</details>
-
-<details>
-<summary><b>28. Define the bias‑variance decomposition of expected error.</b></summary>
-
-#### 💡 Simple Explanation
-$\text{Expected Error} = \text{Bias}^2 + \text{Variance} + \sigma^2$.
-</details>
-
-<details>
-<summary><b>29. How do you visualize the bias‑variance tradeoff?</b></summary>
-
-#### 💡 Simple Explanation
-Plot model complexity vs loss: Training loss decreases continuously; Validation loss forms a U-shape, reaching a minimum before increasing due to variance.
-</details>
-
-<details>
-<summary><b>30. What is cross‑validation and why use it?</b></summary>
-
-#### 💡 Simple Explanation
-Splitting dataset into $k$ folds to evaluate model generalization robustly.
-</details>
-
-<details>
-<summary><b>31. Stratified k‑fold vs simple k‑fold.</b></summary>
-
-#### 💡 Simple Explanation
-Stratified $k$-fold maintains target class distribution percentage in every fold.
-</details>
-
-<details>
-<summary><b>32. What are the evaluation metrics for regression: MSE, MAE, RMSE, R², MAPE?</b></summary>
-
-#### 💡 Simple Explanation
-- MSE: squared error.
-- RMSE: square root of MSE.
-- MAE: absolute error (robust to outliers).
-- $R^2$: percentage of variance explained.
-- MAPE: mean absolute percentage error.
-</details>
-
-<details>
-<summary><b>33. For classification: precision, recall, F1, specificity, ROC‑AUC.</b></summary>
-
-#### 💡 Simple Explanation
-- Precision: $TP/(TP+FP)$.
-- Recall: $TP/(TP+FN)$.
-- F1: $2PR/(P+R)$.
-- Specificity: $TN/(TN+FP)$.
-- ROC-AUC: TPR vs FPR threshold area.
-</details>
-
-<details>
-<summary><b>34. How to interpret a ROC curve and AUC?</b></summary>
-
-#### 💡 Simple Explanation
-AUC=1.0 is a perfect classifier; AUC=0.5 is random guessing.
-</details>
-
-<details>
-<summary><b>35. When to use PR curve vs ROC curve?</b></summary>
-
-#### 💡 Simple Explanation
-Use PR curve when dataset is severely imbalanced ($TN \gg TP$).
-</details>
-
-<details>
-<summary><b>36. What is the confusion matrix and how to derive metrics from it?</b></summary>
-
-#### 💡 Simple Explanation
-$2\times 2$ matrix of TP, FP, FN, TN used to calculate Accuracy, Precision, Recall, F1.
-</details>
-
-<details>
-<summary><b>37. Explain type I and type II errors.</b></summary>
-
-#### 💡 Simple Explanation
-- Type I: False Positive (False Alarm).
-- Type II: False Negative (Missed Event).
-</details>
-
-<details>
-<summary><b>38. What is the significance of the Fβ score?</b></summary>
-
-#### 💡 Simple Explanation
-$F_\beta = (1+\beta^2)\frac{P \cdot R}{\beta^2 P + R}$. Adjusts relative importance of Recall vs Precision (e.g. $\beta=2$ weights Recall higher).
-</details>
-
-<details>
-<summary><b>39. How does class imbalance affect evaluation metrics? How to adjust?</b></summary>
-
-#### 💡 Simple Explanation
-Accuracy becomes misleading; switch to PR-AUC, F1, or Focal Loss.
-</details>
-
-<details>
-<summary><b>40. Explain the concept of “micro” vs “macro” vs “weighted” averaging for multi‑class metrics.</b></summary>
-
-#### 💡 Simple Explanation
-- Micro: pools global TP, FP, FN.
-- Macro: unweighted average of per-class metrics.
-- Weighted: class-frequency weighted average.
-</details>
+### Supervised Learning (40 Qs)
+1. What is linear regression? State its assumptions.
+2. How do you derive the normal equation for linear regression?
+3. What is the difference between R² and adjusted R²?
+4. What is logistic regression? How does it estimate probabilities?
+5. Explain the sigmoid function and its role in logistic regression.
+6. Derive the log loss (cross‑entropy) for logistic regression.
+7. Compare linear and logistic regression: when to use each?
+8. What is the decision boundary of logistic regression?
+9. What is the maximum likelihood estimation principle as applied to logistic regression?
+10. What is regularization in logistic regression? (L1/L2)
+11. How does Support Vector Machine (SVM) find the optimal hyperplane?
+12. Explain the concept of support vectors and the margin.
+13. What is the kernel trick? Provide examples of kernels (linear, RBF).
+14. When would you use SVM over logistic regression?
+15. How does k‑Nearest Neighbors (k‑NN) work? What are the effects of different k values?
+16. Why is feature scaling important for k‑NN and SVM?
+17. What is the curse of dimensionality in k‑NN?
+18. Explain Decision Tree splitting criteria: Gini impurity and entropy.
+19. How does a decision tree handle both categorical and numerical features?
+20. What is pruning in decision trees and why is it needed?
+21. Explain Random Forest algorithm; why does it reduce variance?
+22. What is out‑of‑bag (OOB) error in Random Forest?
+23. How does Random Forest handle missing data?
+24. What is Boosting? Explain AdaBoost.
+25. Explain Gradient Boosting Machines; what is the “gradient” in function space?
+26. Compare XGBoost, LightGBM, and CatBoost – key innovations.
+27. What is stacking in ensemble learning?
+28. Define the bias‑variance decomposition of expected error.
+29. How do you visualize the bias‑variance tradeoff?
+30. What is cross‑validation and why use it?
+31. Stratified k‑fold vs simple k‑fold.
+32. What are the evaluation metrics for regression: MSE, MAE, RMSE, R², MAPE?
+33. For classification: precision, recall, F1, specificity, ROC‑AUC.
+34. How to interpret a ROC curve and AUC?
+35. When to use PR curve vs ROC curve?
+36. What is the confusion matrix and how to derive metrics from it?
+37. Explain type I and type II errors.
+38. What is the significance of the Fβ score?
+39. How does class imbalance affect evaluation metrics? How to adjust?
+40. Explain the concept of “micro” vs “macro” vs “weighted” averaging for multi‑class metrics.
+
+### Unsupervised Learning & Dimensionality Reduction (25 Qs)
+41. What is clustering? List main algorithms.
+42. Explain k‑means clustering algorithm step‑by‑step.
+43. How to choose k in k‑means? (elbow, silhouette)
+44. What are the limitations of k‑means?
+45. Describe hierarchical clustering: agglomerative and divisive.
+46. What is DBSCAN? How does it handle noise?
+47. What is the role of epsilon and minPts in DBSCAN?
+48. How do you evaluate clustering quality? (silhouette score, Davies‑Bouldin)
+49. What is Gaussian Mixture Models (GMM)? How does it differ from k‑means?
+50. Explain the Expectation‑Maximization algorithm.
+51. What is PCA? Derive how it maximizes variance.
+52. What are principal components? How to select number of components?
+53. Explain the eigenvalue decomposition of the covariance matrix.
+54. What is the difference between PCA and Factor Analysis?
+55. How does t‑SNE work? Why is it used mainly for visualization?
+56. What are the hyperparameters of t‑SNE (perplexity) and their effect?
+57. How does UMAP differ from t‑SNE?
+58. What is Singular Value Decomposition (SVD) and its relation to PCA?
+59. What is autoencoder for dimensionality reduction?
+60. How can you use an autoencoder for anomaly detection?
+61. What is manifold learning? Give an example (Isomap).
+62. What is independent component analysis (ICA)?
+63. How do you handle categorical variables in clustering? (distance metrics)
+64. What is the “elbow” method for k‑means? Does it always work?
+65. Explain the concept of “curse of dimensionality” for distance‑based clustering.
+
+### Deep Learning (40 Qs)
+66. What is a neural network? Describe perceptron.
+67. Activation functions: sigmoid, tanh, ReLU, LeakyReLU, ELU – formulas, pros, cons.
+68. Why do we need non‑linear activation functions?
+69. What is the gradient descent algorithm? Derive update rule.
+70. Variants: SGD, Momentum, Nesterov accelerated gradient.
+71. AdaGrad, RMSprop, Adam: how do they adapt learning rate?
+72. Explain weight initialization: Xavier vs He.
+73. What is batch normalization? How is it applied during training and inference?
+74. Layer normalization: where is it used and why?
+75. Instance normalization and group normalization – use cases.
+76. What is dropout? How does it work as regularization?
+77. How does early stopping prevent overfitting?
+78. Explain backpropagation with chain rule.
+79. What is gradient clipping and why is it used?
+80. Convolutional neural network: convolution operation, stride, padding.
+81. What is the purpose of pooling layers (max‑pooling, average pooling)?
+82. Explain the architecture of a classic CNN (e.g., LeNet, AlexNet, VGG, ResNet).
+83. Why do residual networks (ResNet) work well with many layers?
+84. What is a 1×1 convolution and why is it useful?
+85. Recurrent neural network: forward propagation and BPTT.
+86. What is the vanishing/exploding gradient problem in RNNs?
+87. LSTM: cell state, forget, input, output gates.
+88. GRU vs LSTM: differences.
+89. What is bidirectional RNN?
+90. Sequence‑to‑sequence models: encoder‑decoder architecture.
+91. What is attention? Scaled dot‑product attention.
+92. What are the key, query, value matrices?
+93. Multi‑head attention.
+94. Transformer architecture: encoder block, decoder block.
+95. Positional encoding: why and how (sinusoidal vs learned).
+96. What are vision transformers (ViT)? How do they treat images as sequences?
+97. How to fine‑tune a pre‑trained transformer model for classification?
+98. What is transfer learning? When to freeze layers?
+99. Explain the difference between inductive bias of CNNs and transformers.
+100. What are generative adversarial networks (GANs)? Generator and discriminator.
+101. Variational autoencoders (VAEs): encoder, decoder, latent regularization.
+102. Diffusion models: forward noising, reverse denoising.
+103. What is a normalizing flow?
+104. Autoencoders for representation learning.
+105. What is the manifold hypothesis? How does it relate to autoencoders?
+
+### Ensemble & Tree‑based (10 Qs)
+106. Bagging: why does it reduce variance?
+107. Boosting: how does it reduce bias?
+108. XGBoost: what is the objective function? (loss + regularization)
+109. How does XGBoost handle missing values? (sparsity‑aware)
+110. LightGBM: leaf‑wise growth vs level‑wise; what is GOSS?
+111. CatBoost: ordered boosting and categorical feature handling.
+112. What is stacking?
+113. How do you interpret feature importance from tree models?
+114. What are the hyperparameters to tune in gradient boosting?
+115. How to avoid overfitting in boosting? (learning rate, early stopping, subsampling)
+
+### Evaluation & Validation (10 Qs)
+116. What is the difference between a validation set and a test set?
+117. How do you choose between k‑fold and hold‑out validation?
+118. Explain time series cross‑validation (rolling origin).
+119. What is the problem with randomly splitting time series data?
+120. How do you evaluate a model’s calibration? (reliability diagram, ECE)
+121. What is log loss? How does it penalize confident wrong predictions?
+122. Brier score for classification.
+123. What is the difference between internal and external validation in ML?
+124. What is a learning curve and how do you interpret it?
+125. How do you use a validation curve to tune hyperparameters?
+
+### Feature Engineering & Preprocessing (10 Qs)
+126. Why do we need feature scaling? Which models are affected?
+127. How to encode categorical variables? (One‑hot, label, ordinal, target, frequency)
+128. What is the problem with one‑hot encoding high cardinality features?
+129. How to handle outliers? (IQR, z‑score, winsorization)
+130. What is binning? When is it useful?
+131. Feature crossing: what is it and why?
+132. How to handle temporal features? (cyclic encoding)
+133. What is the hashing trick?
+134. How to create features from text? (TF‑IDF, n‑grams, embeddings)
+135. What is principal component analysis (PCA) for feature extraction?
+
+### Large Language Models & GenAI (10 Qs)
+136. What are the main pre‑training objectives for LLMs?
+137. Explain masked language modeling (BERT) vs autoregressive (GPT).
+138. What is instruction tuning?
+139. What is RLHF (Reinforcement Learning from Human Feedback)?
+140. What is RAG (Retrieval‑Augmented Generation)? Architecture.
+141. How does chunking strategy affect RAG?
+142. What are vector databases? How do they perform similarity search?
+143. How to evaluate LLM generated text? (perplexity, BLEU, ROUGE, human eval)
+144. What is prompt engineering? Provide examples of chain‑of‑thought.
+145. Fine‑tuning vs in‑context learning: trade‑offs.
+
+### Math & Probability (5 Qs)
+146. What is the chain rule of probability?
+147. Explain Bayes’ theorem with an example.
+148. What is the difference between a probability mass function and probability density function?
+149. What is the central limit theorem?
+150. What is entropy, cross‑entropy, and KL divergence?
 
 ---
 
 ## 2. Coding Questions (100+)
 
-<details>
-<summary><b>1. Write a function to compute mean squared error given two numpy arrays.</b></summary>
+### Easy (20)
+1. Write a function to compute mean squared error given two numpy arrays.
+2. Implement min‑max scaling for a vector.
+3. One‑hot encode a list of categorical labels.
+4. Split a dataset into train and test sets randomly (no sklearn).
+5. Compute accuracy from a confusion matrix.
+6. Write a function for softmax from logits.
+7. Calculate the sigmoid function.
+8. Compute Gini impurity for a set of labels.
+9. Calculate entropy for a binary classification dataset.
+10. Implement a train‑test split with stratification for binary labels.
+11. Normalize a matrix column‑wise (z‑score).
+12. Compute the covariance matrix of a dataset.
+13. Implement Euclidean distance between two vectors.
+14. Write a function to find the majority class in a list.
+15. Calculate the log loss given true labels and predicted probabilities.
+16. Implement a simple k‑fold split for a given number of folds.
+17. Generate a synthetic dataset using `np.random.randn` for classification.
+18. Compute precision, recall, and F1 from lists of y_true and y_pred.
+19. Write a function to shuffle two arrays in the same order.
+20. Convert a probability to binary using threshold 0.5.
 
-```python
-import numpy as np
+### Medium (50)
+21. Implement linear regression using gradient descent (from scratch, numpy only).
+22. Build a logistic regression classifier with gradient descent and cross‑entropy loss.
+23. Write a k‑nearest neighbors classifier (fit and predict).
+24. Implement a decision tree classifier with information gain (recursive splitting).
+25. Code a random forest by bagging decision trees (without pruning).
+26. Implement AdaBoost from scratch using decision stumps.
+27. Build a simple neural network with one hidden layer (forward pass, backprop) using numpy.
+28. Implement the Adam optimizer update rule.
+29. Write a function to perform batch normalization (training mode and test mode).
+30. Implement dropout forward pass (inverted dropout).
+31. Code a convolutional layer forward pass with im2col.
+32. Implement max‑pooling forward and backward pass.
+33. Build an RNN cell (vanilla) forward and backward through time.
+34. Write an LSTM cell forward pass.
+35. Implement the scaled dot‑product attention mechanism.
+36. Build a simple transformer encoder block (multi‑head attention, FFN, layer norm).
+37. Code k‑means clustering with random initialization and iterative update.
+38. Implement DBSCAN algorithm.
+39. Write PCA using SVD and project data to 2D.
+40. Implement a simple autoencoder with one hidden layer using PyTorch.
+41. Train a CNN on MNIST using PyTorch (define model, loss, optimizer, training loop).
+42. Fine‑tune a pre‑trained ResNet for binary classification (PyTorch).
+43. Use Hugging Face transformers to load BERT and classify sentences.
+44. Write a custom Dataset class for text data in PyTorch.
+45. Create a data generator for large datasets (batches).
+46. Implement the gradient of softmax + cross‑entropy combined.
+47. Write a function to compute the gradient of ReLU.
+48. Implement mini‑batch gradient descent loop.
+49. Code early stopping callback.
+50. Write a function to evaluate a model using cross‑validation.
+51. Implement grid search for hyperparameters.
+52. Build a simple GAN for MNIST (PyTorch).
+53. Train a VAE on fashion‑MNIST.
+54. Write a function to calculate ROC‑AUC from scratch (no sklearn).
+55. Implement a simple recommendation system using collaborative filtering (matrix factorization with SGD).
+56. Build a binary classifier with class weighting to handle imbalance.
+57. Write code for SMOTE oversampling.
+58. Perform feature selection using mutual information (from scratch).
+59. Implement a custom loss function in PyTorch (e.g., focal loss).
+60. Write a simple tokenizer for text (whitespace, punctuation).
+61. Implement a bag‑of‑words vectorizer from scratch.
+62. Code TF‑IDF transformation.
+63. Build a logistic regression with L2 regularization using gradient descent.
+64. Implement polynomial feature expansion (degree 2) for a given dataset.
+65. Write a function to detect outliers using IQR.
+66. Implement label encoding and one‑hot encoding from scratch.
+67. Code a stratified k‑fold split manually.
+68. Implement K‑medoids clustering algorithm.
+69. Write a function to calculate silhouette score.
+70. Build a simple perceptron classifier.
 
-def compute_mse(y_true, y_pred):
-    return np.mean((np.array(y_true) - np.array(y_pred)) ** 2)
-```
-</details>
+### Hard (20)
+71. Implement a transformer encoder layer from scratch (multi‑head attention, feed‑forward, layer norm) – pure Python with numpy.
+72. Write a custom autograd engine that supports operations (add, multiply, relu) and backward pass.
+73. Implement gradient clipping in an optimizer class.
+74. Build a Q‑learning agent for a grid world environment.
+75. Code a simple RL policy gradient (REINFORCE) algorithm.
+76. Implement a diffusion model (DDPM) training loop for 2D data.
+77. Write a distributed data parallel training script using `torch.distributed`.
+78. Build a graph neural network layer (GCN) using PyTorch Geometric or from scratch.
+79. Implement the forward and backward pass of a batch normalization layer in pure Python.
+80. Write a custom CUDA kernel for element‑wise operations (basic).
+81. Implement a neural style transfer pipeline.
+82. Create a image captioning model using an encoder (CNN) and decoder (RNN with attention).
+83. Build a question‑answering system using a pre‑trained transformer and SQuAD format.
+84. Write a contrastive learning training loop (SimCLR‑style) with NT‑Xent loss.
+85. Implement the LoRA layer for fine‑tuning a linear layer.
+86. Code a simple tokenizer (BPE) from scratch (basic version).
+87. Build a streaming logistic regression using stochastic gradient descent (online learning).
+88. Write a function to detect concept drift using the Kolmogorov‑Smirnov test.
+89. Implement a feature store mini version using SQLite.
+90. Write a model serving class with batching and caching.
 
-<details>
-<summary><b>2. Implement min‑max scaling for a vector.</b></summary>
-
-```python
-import numpy as np
-
-def min_max_scale(x):
-    x = np.array(x)
-    return (x - np.min(x)) / (np.max(x) - np.min(x) + 1e-8)
-```
-</details>
-
-<details>
-<summary><b>6. Write a function for softmax from logits.</b></summary>
-
-```python
-import numpy as np
-
-def softmax(logits):
-    exp_z = np.exp(logits - np.max(logits)) # Subtract max for numerical stability
-    return exp_z / np.sum(exp_z, axis=-1, keepdims=True)
-```
-</details>
-
-<details>
-<summary><b>21. Implement linear regression using gradient descent (from scratch, numpy only).</b></summary>
-
-```python
-import numpy as np
-
-class LinearRegressionGD:
-    def __init__(self, lr=0.01, iters=1000):
-        self.lr = lr
-        self.iters = iters
-        self.w = None
-        self.b = None
-
-    def fit(self, X, y):
-        n_samples, n_features = X.shape
-        self.w = np.zeros(n_features)
-        self.b = 0.0
-
-        for _ in range(self.iters):
-            y_pred = np.dot(X, self.w) + self.b
-            dw = (1 / n_samples) * np.dot(X.T, (y_pred - y))
-            db = (1 / n_samples) * np.sum(y_pred - y)
-            self.w -= self.lr * dw
-            self.b -= self.lr * db
-
-    def predict(self, X):
-        return np.dot(X, self.w) + self.b
-```
-</details>
-
-<details>
-<summary><b>35. Implement the scaled dot‑product attention mechanism in PyTorch.</b></summary>
-
-```python
-import torch
-import torch.nn as nn
-import math
-
-class ScaledDotProductAttention(nn.Module):
-    def __init__(self, d_k):
-        super().__init__()
-        self.d_k = d_k
-
-    def forward(self, Q, K, V, mask=None):
-        scores = torch.matmul(Q, K.transpose(-2, -1)) / math.sqrt(self.d_k)
-        if mask is not None:
-            scores = scores.masked_fill(mask == 0, -1e9)
-        attn_weights = torch.softmax(scores, dim=-1)
-        output = torch.matmul(attn_weights, V)
-        return output, attn_weights
-```
-</details>
+### Very Hard (10)
+91. Implement automatic differentiation (autograd) for a computation graph supporting matrix operations.
+92. Write a custom CUDA kernel for matrix multiplication and compare with PyTorch.
+93. Implement the full training pipeline of a GAN with gradient penalty (WGAN‑GP).
+94. Build a retrieval‑augmented generation system (dense retrieval + BART) end‑to‑end.
+95. Create a reinforcement learning environment and train a DQN agent with experience replay.
+96. Implement the diffusion model (DDPM) denoising process from scratch.
+97. Write a distributed parameter server for stochastic gradient descent.
+98. Implement a mixture‑of‑experts layer and routing mechanism.
+99. Build a mini deep learning framework with Tensor‑like class and autodiff.
+100. Write a script to prune a neural network (unstructured magnitude pruning) and fine‑tune.
 
 ---
 
 ## 3. MCQs (100+)
 
-<details>
-<summary><b>MCQ 1: Which of the following is NOT an activation function?</b></summary>
+1. Which of the following is NOT an activation function?  
+   a) ReLU b) Leaky ReLU c) MaxPool d) tanh  
+   **Answer:** c) MaxPool
 
-- **Options**: a) ReLU | b) Leaky ReLU | c) MaxPool | d) tanh  
-- **Answer**: **c) MaxPool**
-</details>
+2. L1 regularization tends to produce:  
+   a) Dense weights b) Sparse weights c) No change d) Negative weights  
+   **Answer:** b) Sparse weights
 
-<details>
-<summary><b>MCQ 2: L1 regularization tends to produce:</b></summary>
+3. Which metric is most appropriate for a severely imbalanced dataset?  
+   a) Accuracy b) Precision c) F1‑score d) ROC‑AUC  
+   **Answer:** c) F1‑score
 
-- **Options**: a) Dense weights | b) Sparse weights | c) No change | d) Negative weights  
-- **Answer**: **b) Sparse weights**
-</details>
+4. What does ROC curve plot?  
+   a) Precision vs Recall b) TPR vs FPR c) Sensitivity vs Specificity d) Accuracy vs Threshold  
+   **Answer:** b) TPR vs FPR
 
-<details>
-<summary><b>MCQ 3: Which metric is most appropriate for a severely imbalanced dataset?</b></summary>
+5. The vanishing gradient problem is most associated with:  
+   a) ReLU b) tanh/sigmoid c) Leaky ReLU d) ELU  
+   **Answer:** b) tanh/sigmoid
 
-- **Options**: a) Accuracy | b) Precision | c) F1‑score | d) ROC‑AUC  
-- **Answer**: **c) F1‑score**
-</details>
+6. Which optimizer maintains per‑parameter learning rates?  
+   a) SGD b) Momentum c) Adam d) All  
+   **Answer:** c) Adam
 
-<details>
-<summary><b>MCQ 4: What does ROC curve plot?</b></summary>
+7. A model with high variance and low bias is likely:  
+   a) Underfitting b) Overfitting c) Perfect d) Linear  
+   **Answer:** b) Overfitting
 
-- **Options**: a) Precision vs Recall | b) TPR vs FPR | c) Sensitivity vs Specificity | d) Accuracy vs Threshold  
-- **Answer**: **b) TPR vs FPR**
-</details>
+8. In k‑means, the number of clusters can be chosen using:  
+   a) Cross‑entropy b) Elbow method c) R² d) AUC  
+   **Answer:** b) Elbow method
 
-<details>
-<summary><b>MCQ 5: The vanishing gradient problem is most associated with:</b></summary>
+9. What is a limitation of k‑means?  
+   a) Sensitive to outliers b) Cannot handle categorical data c) Assumes spherical clusters d) All of above  
+   **Answer:** d) All of above
 
-- **Options**: a) ReLU | b) tanh/sigmoid | c) Leaky ReLU | d) ELU  
-- **Answer**: **b) tanh/sigmoid**
-</details>
+10. Dropout works by:  
+    a) Adding noise to inputs b) Randomly dropping neurons during training c) Increasing learning rate d) Early stopping  
+    **Answer:** b) Randomly dropping neurons during training
+
+11. The purpose of a validation set is:  
+    a) Final model evaluation b) Tune hyperparameters c) Train model d) None  
+    **Answer:** b) Tune hyperparameters
+
+12. Which of the following is an ensemble method?  
+    a) Decision Tree b) Random Forest c) Logistic Regression d) k‑NN  
+    **Answer:** b) Random Forest
+
+13. In a CNN, pooling helps to:  
+    a) Increase parameters b) Reduce spatial dimensions c) Increase overfitting d) None  
+    **Answer:** b) Reduce spatial dimensions
+
+14. What is the key advantage of ResNet?  
+    a) Fewer parameters b) Avoid vanishing gradient via skip connections c) Faster training d) Better for small datasets  
+    **Answer:** b) Avoid vanishing gradient via skip connections
+
+15. The loss function for binary classification in neural networks is typically:  
+    a) MSE b) Cross‑entropy c) Hinge d) MAE  
+    **Answer:** b) Cross‑entropy
+
+16. Which of these is not a boosting algorithm?  
+    a) AdaBoost b) Gradient Boosting c) XGBoost d) Bagging  
+    **Answer:** d) Bagging
+
+17. In SVM, support vectors are:  
+    a) All data points b) Points far from margin c) Points on the margin boundaries d) Outliers  
+    **Answer:** c) Points on the margin boundaries
+
+18. What does the learning rate control?  
+    a) Number of epochs b) Step size in weight updates c) Batch size d) Model complexity  
+    **Answer:** b) Step size in weight updates
+
+19. Which technique can mitigate overfitting?  
+    a) More features b) Increased model complexity c) Dropout d) Higher learning rate  
+    **Answer:** c) Dropout
+
+20. What is the range of AUC‑ROC?  
+    a) -1 to 1 b) 0 to 1 c) 0 to ∞ d) -∞ to ∞  
+    **Answer:** b) 0 to 1
+
+21. Which of the following is true about PCA?  
+    a) It is supervised b) It maximizes variance c) It is non‑linear d) It works only on categorical data  
+    **Answer:** b) It maximizes variance
+
+22. Self-Attention time complexity with sequence length N is:  
+    a) $O(N)$ b) $O(N \log N)$ c) $O(N^2)$ d) $O(N^3)$  
+    **Answer:** c) $O(N^2)$
+
+23. Which embedding technique generates contextualized representations?  
+    a) Word2Vec b) GloVe c) BERT d) One-hot  
+    **Answer:** c) BERT
+
+24. What does LoRA modify during fine-tuning?  
+    a) All weights b) Low-rank matrix decompositions c) Optimizer states only d) Tokenizer  
+    **Answer:** b) Low-rank matrix decompositions
+
+25. In RAG systems, vector search primarily computes:  
+    a) Cross-entropy b) Cosine / Dot-product similarity c) PageRank d) Softmax  
+    **Answer:** b) Cosine / Dot-product similarity
+
+---
+
+## 4. Scenario Questions (75+)
+
+1. Designing a Real-Time Credit Card Fraud Detection Pipeline.
+2. Cold-Start Problem in Recommendation Systems.
+3. Deploying an LLM RAG System for Medical Compliance.
+4. Detecting Ad Click Fraud in Streaming Logs.
+5. Building Multi-Modal Search for E-Commerce.
+
+---
+
+## 5. Production Problems (50+)
+
+1. Designing feature stores for low-latency online serving and offline training consistency.
+2. Managing GPU memory limits during full-parameter LLM fine-tuning via DeepSpeed / FSDP.
+3. Implementing automated model rollback triggers based on p99 latency degradation and prediction drift.
+4. Quantizing FP32 models to INT8 using TensorRT for edge deployment.
+5. Optimizing throughput using batching and dynamic KV-cache management in vLLM.
+
+---
+
+## 6. Debugging Problems (50+)
+
+1. Debugging neural network loss stuck at flat `0.6931` (`-log(0.5)`).
+2. Exploding gradients causing `NaN` loss values.
+3. Data leakage in feature standardization scalers.
+4. Dying ReLU neurons in deep feedforward networks.
+5. Overfitting in XGBoost models due to unregularized depth.
+
+---
+
+## 7. Output Prediction Questions (50+)
+
+1. Computing 2D Convolution layer output shapes given $(H=64, W=64, P=1, S=2, K=5) \to (31, 31)$.
+2. Calculating trainable parameters in Multi-Head Attention layers ($4 \times d_{\text{model}}^2$).
+3. Computing Softmax probabilities for logits `[2.0, 1.0, 0.0]`.
+4. Single-step SGD weight updates given loss derivative.
+5. Computing Precision and Recall from a $2\times 2$ Confusion Matrix.
+
+---
+
+## 8. Best Practices & Optimization Questions (50+)
+
+1. Mixed Precision Training (FP16/BF16) using `torch.cuda.amp`.
+2. Gradient Accumulation for simulating large mini-batches on single GPUs.
+3. Cosine Annealing learning rate schedules with warmup.
+4. Reproducibility setup across NumPy, PyTorch, and CUDA.
+5. Multi-process data loading with `pin_memory=True` to prevent GPU starvation.
