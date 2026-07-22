@@ -169,7 +169,101 @@ graph TD
 
 ---
 
-### 4. Intermediate Expected Interview Questions & Follow-ups
+### 4. Agentic AI & Tool Calling
+
+The most critical 2026–2027 interview topic for applied AI roles. Agentic AI refers to LLM-powered systems that reason, plan, use external tools, and autonomously execute multi-step workflows.
+
+#### ReAct Pattern (Reason-Act-Observe)
+
+The foundational pattern for LLM agents: the model alternates between reasoning about the current state, selecting an action (tool call), and observing the result.
+
+```mermaid
+graph TD
+    Query[User Query] --> Thought[Thought: Analyze what's needed]
+    Thought --> Action[Action: Select & Call Tool]
+    Action --> Observation[Observation: Parse Tool Result]
+    Observation --> Thought2{Goal Achieved?}
+    Thought2 -->|No| Thought
+    Thought2 -->|Yes| Answer[Final Answer]
+```
+
+#### Function Calling / Tool Use Architecture
+
+```python
+import openai
+import json
+
+# Define tools the LLM can call
+tools = [
+    {
+        "type": "function",
+        "function": {
+            "name": "get_weather",
+            "description": "Get current weather for a city",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "city": {"type": "string", "description": "City name"},
+                    "unit": {"type": "string", "enum": ["celsius", "fahrenheit"]}
+                },
+                "required": ["city"]
+            }
+        }
+    }
+]
+
+def run_agent(user_query: str):
+    messages = [{"role": "user", "content": user_query}]
+    
+    while True:
+        response = openai.chat.completions.create(
+            model="gpt-4o",
+            messages=messages,
+            tools=tools,
+            tool_choice="auto"
+        )
+        msg = response.choices[0].message
+        
+        # If no tool call — final answer
+        if not msg.tool_calls:
+            return msg.content
+        
+        # Execute tool calls
+        messages.append(msg)  # Add assistant's tool call to history
+        for tool_call in msg.tool_calls:
+            result = execute_tool(tool_call.function.name,
+                                  json.loads(tool_call.function.arguments))
+            messages.append({
+                "role": "tool",
+                "tool_call_id": tool_call.id,
+                "content": json.dumps(result)
+            })
+```
+
+#### MCP — Model Context Protocol
+
+Anthropic's open standard (now industry-wide) that standardizes how LLMs connect to external data sources and tools:
+
+| Layer | Role |
+| :--- | :--- |
+| **MCP Host** | Application containing LLM (Claude Desktop, IDE plugin) |
+| **MCP Client** | Protocol client managing server connections |
+| **MCP Server** | Lightweight service exposing Resources, Tools, and Prompts |
+
+MCP removes the need to write custom API integration code per tool. A single MCP server exposes a standardized interface the LLM queries.
+
+#### Multi-Agent Orchestration Patterns
+
+| Pattern | Architecture | Best For |
+| :--- | :--- | :--- |
+| **Sequential** | Agent A → Agent B → Agent C | Linear document processing pipelines |
+| **Parallel** | Agent A & B run concurrently → Aggregator | Independent research subtasks |
+| **Supervisor** | Orchestrator LLM routes to specialist agents | Complex routing with conditional logic |
+| **Reflection** | Agent → Critic → Refined Agent output | High-quality generation with self-correction |
+
+---
+
+### 5. Intermediate Expected Interview Questions & Follow-ups
 
 #### Q2: How does KV-Caching reduce autoregressive decoding time from $O(N^2)$ to $O(N)$ per token?
 - **Answer**: During autoregressive text generation, at step $t$, the key vector $K_{\le t}$ and value vector $V_{\le t}$ of previous tokens do not change. Without caching, the model recomputes $K$ and $V$ for all previous $t-1$ tokens at every new step. KV-Cache stores $K$ and $V$ in GPU memory and appends only the newly computed $k_t$ and $v_t$, reducing matrix operations per step to a single token vector multiplication.
@@ -177,6 +271,10 @@ graph TD
   $$\text{Memory}_{\text{KV}} = 2 \times b \times s \times l \times h \times d_{\text{head}} \times \text{bytes\_per\_elem}$$
   For Batch $b=1$, Seq Len $s=4096$, Layers $l=80$, Heads $h=64$, Head Dim $d=128$, FP16 (2 bytes):
   $$2 \times 1 \times 4096 \times 80 \times 64 \times 128 \times 2 \approx 10.73 \text{ GB of VRAM per sequence!}$$
+
+#### Q2b: How does the ReAct agent pattern prevent hallucination in tool-use scenarios?
+- **Answer**: Traditional prompting causes LLMs to fabricate answers from parametric memory. ReAct externalizes knowledge retrieval: the model *reasons* about what information is needed, *acts* by calling a real tool (search API, database, calculator), and *observes* the factual response before generating an answer. The grounding in real tool output prevents the model from confabulating. Failure modes: tool errors, infinite loops, prompt injection via malicious tool outputs.
+- **Follow-up**: *What safety measures prevent prompt injection via tool outputs?* → Sandboxed execution environment, output length limits, structured JSON schema validation, allow-list of trusted tool domains.
 
 ---
 
@@ -236,7 +334,47 @@ Where $y_w$ is the winning (preferred) response and $y_l$ is the losing (dispref
 
 ---
 
-### 4. Advanced Expected Interview Questions & Senior Scenarios
+### 4. LLM Evaluation Metrics
+
+How to measure the quality of generated text is a critical interview topic at every AI company.
+
+| Metric | Type | How It Works | Best For | Limitation |
+| :--- | :--- | :--- | :--- | :--- |
+| **BLEU** | Reference-based | N-gram overlap (precision) between generated and reference text | Machine Translation | Doesn't reward paraphrase; poor for open-ended generation |
+| **ROUGE-L** | Reference-based | Longest Common Subsequence (LCS) recall between generated and reference | Summarization | Same limitation: brittle to synonyms |
+| **BERTScore** | Embedding-based | Cosine similarity of token embeddings (uses BERT-family model) | General NLG evaluation | Inherits BERT's domain biases |
+| **Perplexity** | Intrinsic | Exponential of model's cross-entropy loss on test corpus | Language model quality | Lower ≠ better downstream task performance |
+| **G-Eval / LLM-as-Judge** | LLM-based | Uses GPT-4 as evaluator scoring on defined rubric dimensions | Open-ended generation, Chatbot quality | Expensive; has position bias and self-preference |
+
+```python
+# LLM-as-Judge pattern (G-Eval style)
+EVAL_PROMPT = """
+You are an impartial judge. Evaluate the following response on a scale 1-5.
+
+Criteria:
+- Factual Accuracy (1-5)
+- Coherence (1-5)
+- Helpfulness (1-5)
+- Conciseness (1-5)
+
+Question: {question}
+Response: {response}
+Reference Answer: {reference}
+
+Output ONLY a JSON: {"accuracy": X, "coherence": X, "helpfulness": X, "conciseness": X}
+"""
+```
+
+### 5. Content Safety & Guardrails
+
+- **Llama Guard**: Meta's safety classifier trained on a safety taxonomy (violence, hate, privacy, sexual content). Runs as a separate inference pass on both inputs and outputs.
+- **Constitutional AI (Anthropic)**: Trains models to be self-critiquing — model evaluates its own response against a list of principles and rewrites unsafe responses iteratively.
+- **NeMo Guardrails (NVIDIA)**: Programmatic guardrails defined in Colang (a domain-specific language) that control conversation flow, block topical rails, and validate outputs.
+- **Prompt Injection Defense**: Separate system prompt from user content with clearly delimited tokens; use structured output schemas; validate tool call arguments via allowlists.
+
+---
+
+### 6. Advanced Expected Interview Questions & Senior Scenarios
 
 #### Q3: Explain FlashAttention and why it yields 2x-4x speedups without changing the exact math of attention.
 - **Answer**: Standard attention writes intermediate matrices $S = QK^T \in \mathbb{R}^{N \times N}$ and $P = \text{softmax}(S) \in \mathbb{R}^{N \times N}$ to High Bandwidth Memory (HBM) on the GPU, requiring $O(N^2)$ memory reads/writes. FlashAttention tiles the input matrices $Q, K, V$ into blocks that fit inside fast High-Speed SRAM (L1/L2 cache). Using online softmax normalization (Tiling algorithm), it computes attention iteratively block-by-block without ever materializing the $N \times N$ matrix in HBM, reducing memory access from $O(N^2)$ to $O(N)$.
@@ -247,3 +385,10 @@ Where $y_w$ is the winning (preferred) response and $y_l$ is the losing (dispref
   2. **KV-Cache Optimization**: Use **vLLM** with PagedAttention and Grouped-Query Attention (GQA).
   3. **Continuous Batching**: Use iteration-level batching (inflight batching) instead of request-level batching to prevent long prompts from stalling short completion streams.
   4. **Speculative Decoding**: Deploy a small 1B draft model to generate candidate token sequences, verified in parallel by the 70B target model in a single forward pass.
+
+#### Q5: How do you build a safe multi-agent system that prevents runaway autonomous execution?
+- **Strategy**:
+  1. **Human-in-the-Loop Checkpoints**: Require human approval before any irreversible action (deleting data, sending emails, making financial transactions).
+  2. **Tool Permission Scoping**: Each agent has a minimal permission set (principle of least privilege). A research agent can read but not write; a writer agent can create files but not execute code.
+  3. **Max Iteration Limits**: Hard cap on ReAct loop iterations (e.g., 15 steps) to prevent infinite agent loops.
+  4. **Output Schema Validation**: Validate every agent output with Pydantic schemas before passing to the next agent or executing a tool.

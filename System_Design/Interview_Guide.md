@@ -130,10 +130,76 @@ graph TD
 - **Event Streaming Platform (Apache Kafka)**: Distributed, partitioned, append-only disk commit log. Messages are retained based on configurable TTL. Consumers track their own reading **offset**. Ideal for high-throughput log aggregation, event sourcing, and real-time analytics pipelines.
 
 ### Rate Limiting Algorithms
-1. **Token Bucket**: Bucket holds tokens; tokens added at fixed rate. Request requires 1 token. Allows burst traffic up to bucket capacity.
-2. **Leaky Bucket**: Requests enter FIFO queue; processed at fixed constant rate. Smooths out traffic bursts.
-3. **Fixed Window Counter**: Divides time into fixed windows (e.g., 1 minute). Resets count at window boundary. (Prone to $2\times$ burst traffic near boundary windows).
-4. **Sliding Window Counter**: Combines current window and previous window counts using weighted average. Highly accurate and memory-efficient.
+
+| Algorithm | Burst Handling | Memory | Accuracy | Best For |
+|-----------|---------------|--------|----------|----------|
+| **Token Bucket** | ✅ Allows burst up to capacity | Low (2 vars per user) | High | API rate limiting (most common) |
+| **Leaky Bucket** | ❌ No burst — fixed output rate | Low (queue per user) | High | Smoothing traffic spikes |
+| **Fixed Window Counter** | ❌ 2× burst at window boundary | Very Low | Low | Simple but imprecise limits |
+| **Sliding Window Log** | ❌ Exact but high memory | High (per-request log) | Exact | Low-volume, precision-critical APIs |
+| **Sliding Window Counter** | ⚠️ Approximate burst handling | Low (2 vars per window) | High | Best balance of precision + memory |
+
+```python
+import time
+import redis
+
+# ─── Token Bucket (distributed with Redis) ───────────────────────────────────
+TOKEN_BUCKET_SCRIPT = """
+local key = KEYS[1]
+local rate = tonumber(ARGV[1])     -- tokens per second
+local capacity = tonumber(ARGV[2]) -- max bucket size (burst limit)
+local now = tonumber(ARGV[3])      -- current timestamp (float seconds)
+local requested = tonumber(ARGV[4])-- tokens requested per call
+
+-- Get current state or initialize
+local last_time = tonumber(redis.call('HGET', key, 'last_time') or now)
+local tokens    = tonumber(redis.call('HGET', key, 'tokens') or capacity)
+
+-- Refill tokens based on time elapsed
+local elapsed = math.max(0, now - last_time)
+tokens = math.min(capacity, tokens + elapsed * rate)
+
+-- Check if request can be served
+if tokens >= requested then
+    tokens = tokens - requested
+    redis.call('HSET', key, 'tokens', tokens, 'last_time', now)
+    redis.call('EXPIRE', key, 3600)  -- TTL to auto-cleanup
+    return 1   -- ALLOWED
+else
+    redis.call('HSET', key, 'last_time', now)
+    return 0   -- REJECTED (rate limited)
+end
+"""
+
+def is_rate_limited(client_id: str, rate: float = 10.0, capacity: int = 100) -> bool:
+    r = redis.Redis()
+    result = r.eval(TOKEN_BUCKET_SCRIPT, 1, f"rate_limit:{client_id}",
+                    rate, capacity, time.time(), 1)
+    return result == 0  # True = limited, False = allowed
+
+# ─── Sliding Window Counter ───────────────────────────────────────────────────
+def sliding_window_rate_limit(user_id: str, limit: int, window_sec: int) -> bool:
+    r = redis.Redis()
+    now = time.time()
+    window_start = now - window_sec
+    key = f"sw:{user_id}"
+
+    pipe = r.pipeline()
+    pipe.zremrangebyscore(key, 0, window_start)  # Remove expired entries
+    pipe.zadd(key, {str(now): now})              # Add current request timestamp
+    pipe.zcard(key)                               # Count requests in window
+    pipe.expire(key, window_sec * 2)
+    results = pipe.execute()
+
+    count = results[2]
+    return count > limit  # True = rate limited
+```
+
+**Production Rate Limiting Decision**:
+- **External (API Gateway)**: Kong, NGINX, AWS API Gateway — preferred for L7 HTTP rate limiting without application code changes.
+- **Distributed State**: Always store rate limit counters in Redis (not in-process memory) for horizontally-scaled services.
+- **Headers**: Return `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`, and `Retry-After` headers.
+
 
 ---
 

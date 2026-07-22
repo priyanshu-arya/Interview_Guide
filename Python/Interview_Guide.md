@@ -101,6 +101,126 @@ This comprehensive guide breaks down Python technical interview preparation into
   - `threading` module: Ideal for I/O-bound tasks (file, network, DB calls) where GIL is released during OS calls.
   - `multiprocessing` module: Spawns independent OS processes to bypass GIL for CPU-bound computation.
 
+### Dataclasses & Modern Typing (SDE-2 Tier)
+
+#### `dataclasses` — Eliminating Boilerplate
+```python
+from dataclasses import dataclass, field
+from typing import ClassVar
+
+@dataclass(order=True, frozen=False)
+class Employee:
+    name: str
+    salary: float
+    skills: list[str] = field(default_factory=list)  # ✅ SAFE mutable default
+    _headcount: ClassVar[int] = 0                     # Class variable, not an instance field
+
+    def __post_init__(self):          # Runs after __init__ for validation
+        if self.salary < 0:
+            raise ValueError("Salary cannot be negative")
+        Employee._headcount += 1
+
+# Why field(default_factory=list)?
+# Without it: skills=[] would share ONE list across ALL instances (mutable default arg bug)
+e1, e2 = Employee("Alice", 90000), Employee("Bob", 80000)
+e1.skills.append("Python")  # Does NOT affect e2.skills
+```
+
+**Interview Q**: *When would you use `frozen=True`?* → Creates immutable instances (like a tuple), making them hashable and safe as dict keys or set members.
+
+#### `Protocol` — Structural Subtyping (Duck Typing with Type Safety)
+```python
+from typing import Protocol, runtime_checkable
+
+@runtime_checkable
+class Serializable(Protocol):
+    def to_json(self) -> str: ...
+    def to_csv(self) -> str: ...
+
+class User:
+    def __init__(self, name: str):
+        self.name = name
+    def to_json(self) -> str:
+        return f'{{"name": "{self.name}"}}'
+    def to_csv(self) -> str:
+        return self.name
+
+# User never inherits from Serializable — structural subtyping!
+def export(obj: Serializable) -> None:
+    print(obj.to_json())
+
+export(User("Alice"))       # ✅ Works — User satisfies Serializable Protocol
+print(isinstance(User("Bob"), Serializable))  # True (with @runtime_checkable)
+```
+
+**Interview Q**: *`Protocol` vs `abc.ABC`?*
+- `Protocol`: Structural/implicit subtyping — class satisfies Protocol if it has the right methods, **without inheriting**. Enables true duck typing with static checks.
+- `abc.ABC`: Nominal/explicit subtyping — class **must explicitly inherit** and implement abstract methods or `TypeError` at instantiation.
+
+#### `match/case` — Structural Pattern Matching (Python 3.10+)
+```python
+def process_command(command: dict):
+    match command:
+        case {"action": "create", "name": str(name)}:
+            return f"Creating resource: {name}"
+        case {"action": "delete", "id": int(resource_id)} if resource_id > 0:
+            return f"Deleting resource ID: {resource_id}"
+        case {"action": "list"}:
+            return "Listing all resources"
+        case _:
+            raise ValueError(f"Unknown command: {command}")
+
+# Structural matching on class instances
+from dataclasses import dataclass
+
+@dataclass
+class Point: x: float; y: float
+
+def describe(point: Point):
+    match point:
+        case Point(x=0, y=0): return "Origin"
+        case Point(x=0, y=y): return f"Y-axis at y={y}"
+        case Point(x=x, y=0): return f"X-axis at x={x}"
+        case Point(x=x, y=y): return f"Point at ({x}, {y})"
+```
+
+#### `pytest` — Production Testing Essentials
+```python
+import pytest
+from unittest.mock import patch, MagicMock
+
+# Parameterized tests (eliminates duplicate test functions)
+@pytest.mark.parametrize("salary,expected", [
+    (50000, True),
+    (-1000, False),
+    (0, True),
+])
+def test_salary_validation(salary, expected):
+    if expected:
+        emp = Employee("Test", salary)
+        assert emp.salary == salary
+    else:
+        with pytest.raises(ValueError):
+            Employee("Test", salary)
+
+# Fixtures (dependency injection for test setup/teardown)
+@pytest.fixture
+def db_connection():
+    conn = create_test_db()   # Setup
+    yield conn                 # Test runs here
+    conn.close()               # Teardown — always runs even if test fails
+
+# Mocking external dependencies
+def test_payment_service():
+    with patch("myapp.payments.stripe.charge") as mock_charge:
+        mock_charge.return_value = {"status": "success", "charge_id": "ch_123"}
+        result = process_payment(amount=100, token="tok_test")
+        mock_charge.assert_called_once_with(amount=100, currency="usd", source="tok_test")
+        assert result["charge_id"] == "ch_123"
+```
+
+**Interview Q**: *`patch` vs `MagicMock`?* — `patch` replaces a real object at its import path during the test. `MagicMock` creates a flexible mock object that auto-creates attributes and records calls.
+
 ---
 
 ## 🔴 3. Advanced Section (Senior / Staff Tier: 5+ YOE)
@@ -147,3 +267,42 @@ Follow this 10-step strategy to execute cleanly during live coding & technical d
 10. **Stay Calm and Pythonic**: If stuck, start with a simple brute-force approach, communicate your mental model clearly, and optimize iteratively.
 
 > 🚨 **Warning**: Never rely on unmanaged global state or unhandled mutable parameters; it is a major red flag in senior technical loops.
+
+---
+
+## ✅ Final Interview Checklist & Do's and Don'ts
+
+### 🟢 Always Do
+- State the **Python version** you're targeting (3.10+ for `match/case`, 3.11+ for `TaskGroup`, 3.12+ for `type` aliases)
+- Use `field(default_factory=...)` for mutable defaults in `dataclasses`
+- Prefer `NOT EXISTS` / `Protocol` / `TypeVar` over naive solutions when typing is involved
+- Use `@functools.wraps` when writing decorators to preserve `__name__`, `__doc__`, `__module__`
+- Always call `optimizer.zero_grad()` BEFORE `loss.backward()` in PyTorch
+- Use `async with` and `async for` (not regular `with`/`for`) in async code
+- Mention GIL when discussing threading — explain why `multiprocessing` is needed for CPU-bound work
+- Use context managers (`with`) for file I/O, locks, database connections — never raw try/finally
+- Prefer `is None` / `is not None` over `== None` / `!= None`
+
+### 🔴 Never Do
+- ❌ Use mutable defaults: `def f(x=[])` — causes shared state bug
+- ❌ Use `raise e` instead of `raise` when re-raising — loses original traceback
+- ❌ Use `b = a` thinking it's a copy — it's an alias
+- ❌ Modify a list/dict while iterating over it
+- ❌ Use `range` vs `xrange` in Python 3 — `xrange` doesn't exist; `range` is already lazy
+- ❌ Mix `asyncio.sleep` with `time.sleep` in async code — blocks the event loop
+- ❌ Access `__dict__` on a class with `__slots__` — raises `AttributeError`
+- ❌ Use `float` for currency/financial calculations — use `decimal.Decimal`
+- ❌ Forget `@functools.wraps` in decorators — loses the wrapped function's metadata
+- ❌ Use bare `except:` — catches `SystemExit`, `KeyboardInterrupt`, and `GeneratorExit`
+
+### 🎯 Top 10 Topics Interviewers Probe Deepest
+1. GIL mechanics and when to use threading vs multiprocessing vs asyncio
+2. `__slots__` — what it does and memory implications
+3. Mutable default argument bug — why it happens at *definition* time
+4. Generator vs List: when to use `yield` vs list comprehension
+5. `Protocol` vs `abc.ABC` — structural vs nominal typing
+6. Metaclass instantiation pipeline (`type.__call__` → `__new__` → `__init__`)
+7. Late binding closures — why loop variable capture doesn't work as expected
+8. `dataclasses` field defaults and `__post_init__`
+9. Context manager protocol (`__enter__`/`__exit__`) and `@contextlib.contextmanager`
+10. `asyncio.gather` vs `asyncio.wait` vs `asyncio.TaskGroup`

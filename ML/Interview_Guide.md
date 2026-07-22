@@ -96,6 +96,109 @@ High Bias (Underfitting) <-------- Optimal Complexity --------> High Variance (O
 - **CNNs**: Utilize spatial locality via sliding kernels/filters, weight sharing, and pooling operations (Max/Average pooling). Captures translation-invariant hierarchical features.
 - **RNNs / LSTMs / GRUs**: Designed for sequential data. Standard RNNs suffer from Vanishing/Exploding Gradients. LSTMs introduce Cell State ($C_t$) gated by Forget Gate ($f_t$), Input Gate ($i_t$), and Output Gate ($o_t$).
 
+#### GRU vs LSTM — Key Comparison
+
+| Dimension | LSTM | GRU |
+|-----------|------|-----|
+| **Gates** | 3 gates: Forget, Input, Output | 2 gates: Reset, Update |
+| **Memory Cell** | Separate Cell State $C_t$ + Hidden State $h_t$ | Single Hidden State $h_t$ |
+| **Parameters** | ~4x input/hidden dimension | ~3x input/hidden dimension (25% fewer) |
+| **Training Speed** | Slower (more parameters) | Faster to train |
+| **Performance** | Better for very long sequences | Matches LSTM quality on most tasks |
+| **Best For** | Complex long-term dependencies (music, language) | Simpler sequential tasks, faster iteration |
+
+```python
+import torch.nn as nn
+
+# GRU: fewer parameters, faster training, comparable quality
+gru = nn.GRU(input_size=128, hidden_size=256, num_layers=2,
+             batch_first=True, bidirectional=True, dropout=0.3)
+
+# LSTM: better for very long sequences requiring complex gating
+lstm = nn.LSTM(input_size=128, hidden_size=256, num_layers=2,
+               batch_first=True, bidirectional=True, dropout=0.3)
+```
+
+#### 4. Learning Rate Schedulers
+
+Learning rate scheduling is critical for both classical DL and LLM fine-tuning. Static LRs cause either divergence (too high) or slow convergence (too low).
+
+```python
+import torch.optim as optim
+from torch.optim.lr_scheduler import CosineAnnealingLR, OneCycleLR
+import math
+
+# 1. Cosine Annealing with Warm Restarts
+scheduler = CosineAnnealingLR(optimizer, T_max=100, eta_min=1e-6)
+
+# 2. OneCycleLR (Smith, 2019) — warmup + cosine decay in one cycle
+scheduler = OneCycleLR(
+    optimizer,
+    max_lr=3e-4,           # Peak LR after warmup
+    total_steps=num_epochs * len(train_loader),
+    pct_start=0.1,         # 10% warmup, 90% cosine decay
+    anneal_strategy='cos'
+)
+
+# 3. Manual Linear Warmup + Cosine Decay (common in LLM fine-tuning)
+def lr_with_warmup(step, warmup_steps, total_steps, base_lr):
+    if step < warmup_steps:
+        return base_lr * (step / warmup_steps)    # Linear warmup
+    progress = (step - warmup_steps) / (total_steps - warmup_steps)
+    return base_lr * 0.5 * (1 + math.cos(math.pi * progress))  # Cosine decay
+```
+
+| Scheduler | Best For | Behavior |
+|-----------|----------|----------|
+| **Constant LR** | Quick experiments | No adaptation — risky |
+| **Step Decay** | Image classification | Drops LR by factor at fixed epochs |
+| **Cosine Annealing** | General DL, LLM fine-tuning | Smooth decay, avoids local minima |
+| **Warmup + Cosine** | Transformers, LLMs | Stabilizes early training, smooth decay |
+| **OneCycleLR** | ResNets, fast training | Super-convergence via LR cycling |
+
+#### 5. Model Explainability (SHAP & LIME)
+
+> [!IMPORTANT]
+> Explainability questions appear in **every Data Science interview** and increasingly in ML Engineer interviews at companies with compliance requirements.
+
+```python
+import shap
+from lime.lime_tabular import LimeTabularExplainer
+
+# ---- SHAP (SHapley Additive exPlanations) ----
+# Works with any model; uses game theory to attribute prediction to features
+explainer = shap.TreeExplainer(xgb_model)   # Fast tree-specific explainer
+shap_values = explainer.shap_values(X_test) # Shape: (n_samples, n_features)
+
+# Waterfall plot: shows how features pushed prediction from base value
+shap.waterfall_plot(explainer.expected_value, shap_values[0], X_test.iloc[0])
+
+# Summary plot: global feature importance across all samples
+shap.summary_plot(shap_values, X_test, plot_type="bar")
+
+# ---- LIME (Local Interpretable Model-Agnostic Explanations) ----
+# Fits a local linear model around a specific prediction
+explainer = LimeTabularExplainer(
+    training_data=X_train.values,
+    feature_names=X_train.columns.tolist(),
+    mode='classification'
+)
+explanation = explainer.explain_instance(
+    data_row=X_test.iloc[0].values,
+    predict_fn=xgb_model.predict_proba,
+    num_features=10
+)
+explanation.show_in_notebook()
+```
+
+| Dimension | SHAP | LIME |
+|-----------|------|------|
+| **Theoretical Basis** | Shapley values (game theory, exact) | Local linear approximation |
+| **Scope** | Global + Local explanations | Local only |
+| **Consistency** | Consistent (same input → same output) | Stochastic (randomness in sampling) |
+| **Speed** | Fast for trees (TreeSHAP), slow for DNN | Fast for any model |
+| **Best For** | XGBoost, LightGBM, Tree models | Any black-box model (DNN, SVM) |
+
 ---
 
 ### Intermediate Coding Expectations

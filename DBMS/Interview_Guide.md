@@ -178,6 +178,67 @@ Because old tuple versions accumulate over time (bloat), PostgreSQL requires bac
 
 ---
 
+## 3. Two-Phase Locking (2PL) & Deadlock Detection
+
+### Two-Phase Locking (2PL)
+2PL is a concurrency control protocol guaranteeing **serializability**. Every transaction must go through exactly two phases:
+
+```
+Phase 1: GROWING PHASE
+  ─── Acquire locks, cannot release any ──► LOCK POINT (max locks held)
+  
+Phase 2: SHRINKING PHASE
+  ─── Can only release locks, cannot acquire new ones ──►
+```
+
+| 2PL Variant | Description | Guarantees |
+|-------------|-------------|------------|
+| **Basic 2PL** | Lock point reached; release locks during execution | Serializability ✅; Cascading aborts possible ❌ |
+| **Strict 2PL** | All **Exclusive (Write) locks** held until transaction COMMIT/ABORT | Serializability ✅; No cascading aborts ✅ |
+| **Rigorous 2PL** | **All locks** (both shared + exclusive) held until COMMIT/ABORT | Strictest; Simpler recovery; Used by most RDBMSs |
+
+### Lock Compatibility Matrix
+
+|   | **Shared (S)** | **Exclusive (X)** |
+|---|:-:|:-:|
+| **Shared (S)** | ✅ Compatible | ❌ Incompatible |
+| **Exclusive (X)** | ❌ Incompatible | ❌ Incompatible |
+
+### Deadlock Example
+
+```
+T1: LOCK(A) → waiting for LOCK(B)
+T2: LOCK(B) → waiting for LOCK(A)
+         ↑________________________↑
+         Circular Wait = Deadlock!
+
+Wait-For Graph:  T1 → T2 → T1  (Cycle detected!)
+```
+
+**Deadlock Prevention Strategies**:
+1. **Wait-Die**: Older transaction waits; younger transaction is aborted ("dies") and restarted.
+2. **Wound-Wait**: Older transaction "wounds" (aborts) younger conflicting transaction; younger transaction waits.
+3. **Timeout**: Abort transaction if it waits longer than a configured threshold.
+4. **Detection + Resolution**: Periodically run cycle detection on Wait-For Graph. Abort the **victim** (cheapest-to-restart transaction) to break the cycle.
+
+```sql
+-- PostgreSQL: View active locks and potential deadlocks
+SELECT pid, wait_event_type, wait_event, state, query
+FROM pg_stat_activity
+WHERE wait_event_type = 'Lock';
+
+-- Terminate a blocking process (use with care!)
+SELECT pg_terminate_backend(blocking_pid)
+FROM pg_blocking_pids(locked_pid);
+```
+
+> [!TIP]
+> **Strict 2PL** is what production databases like PostgreSQL and MySQL InnoDB actually implement. When answering "How do databases prevent cascading aborts?", the answer is Strict 2PL — releasing write locks only at commit time.
+
+
+
+---
+
 # 📚 THEORY QUESTIONS (150+)
 
 ---

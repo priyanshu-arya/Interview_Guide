@@ -130,20 +130,146 @@
     *Answer*: Eliminates duplicate rows from query result set.
 
 ### 🗂️ DDL & DML (15 Qs)
+
 21. **Difference between `DROP TABLE` and `TRUNCATE TABLE`.**  
-22. **How to add a column with default value to existing table?**  
+    *Answer*: `DROP TABLE` removes both table structure and all data permanently (cannot be rolled back in most DBs). `TRUNCATE TABLE` removes all rows but preserves the table schema; resets identity counters; minimal logging (DDL in most DBs); much faster than DELETE for full-table clears.
+
+22. **How to add a column with a default value to an existing table?**
+    ```sql
+    -- PostgreSQL / MySQL
+    ALTER TABLE employees ADD COLUMN is_active BOOLEAN DEFAULT TRUE NOT NULL;
+    -- In PostgreSQL 11+, adding a column with a non-volatile DEFAULT is instantaneous (metadata-only change)
+    -- Before PG11, this caused a full table rewrite — significant downtime for large tables.
+    ```
+
 23. **What is `CASCADE DELETE` in foreign keys?**  
+    *Answer*: When a parent record is deleted, all child records referencing it via Foreign Key are automatically deleted. Alternative behaviors: `RESTRICT` (prevents deletion if children exist), `SET NULL` (sets FK column to NULL), `SET DEFAULT`. Use CASCADE carefully — it can silently delete large amounts of related data.
+
 24. **Difference between `INSERT INTO ... SELECT` and `SELECT ... INTO`.**  
-25. **What is an Upsert statement? (`ON CONFLICT DO UPDATE` / `MERGE`)**  
-26–35. (Details on DDL schema changes, locks during DDL, constraint checks, `ALTER TABLE` locks, temporary tables vs table variables).
+    - `INSERT INTO target SELECT ... FROM source` — inserts into an **existing** table. Standard ANSI SQL.
+    - `SELECT ... INTO new_table FROM source` — creates a **new** table and inserts data. SQL Server/PostgreSQL-specific. Creates a heap table without indexes.
+
+25. **What is an UPSERT statement?**
+    ```sql
+    -- PostgreSQL: ON CONFLICT DO UPDATE
+    INSERT INTO user_profiles (user_id, email, updated_at)
+    VALUES (101, 'new@email.com', NOW())
+    ON CONFLICT (user_id)
+    DO UPDATE SET email = EXCLUDED.email, updated_at = EXCLUDED.updated_at;
+
+    -- MySQL: ON DUPLICATE KEY UPDATE
+    INSERT INTO user_profiles (user_id, email) VALUES (101, 'new@email.com')
+    ON DUPLICATE KEY UPDATE email = VALUES(email);
+    ```
+
+26. **What locks does `ALTER TABLE` acquire? How to minimize downtime?**  
+    *Answer*: Most DDL operations (adding NOT NULL column, changing types) acquire an `ACCESS EXCLUSIVE` lock, blocking all reads and writes. Strategies: Use `pg_repack` or `gh-ost` (for MySQL) for zero-downtime schema migrations. In PostgreSQL, `ADD COLUMN` with a volatile `DEFAULT` requires a table rewrite; use `ADD COLUMN DEFAULT NULL` then backfill in batches.
+
+27. **What is a Temporary Table and how does it differ from a CTE?**  
+    *Answer*: Temporary tables (`CREATE TEMP TABLE`) persist for the session, can be indexed, analyzed, and referenced multiple times. CTEs are inline query aliases, typically not materialized (though PostgreSQL 12- always materializes CTEs). Use temp tables for multi-step transformations on large datasets where the intermediate result needs an index.
+
+28. **What is a Generated Column (Computed Column)?**
+    ```sql
+    -- PostgreSQL: GENERATED ALWAYS AS
+    ALTER TABLE orders ADD COLUMN total_with_tax NUMERIC
+        GENERATED ALWAYS AS (subtotal * 1.18) STORED;
+    -- Value auto-computed on INSERT/UPDATE; cannot be manually set
+    ```
+
+29. **What are CHECK constraints and when are they validated?**  
+    *Answer*: `CHECK` constraints validate a condition before each INSERT/UPDATE on a row. Example: `CHECK (age >= 18 AND age <= 120)`. They are enforced at write time, not read time. NOT NULL is a special case of a check constraint.
+
+30. **How does `SAVEPOINT` work within a transaction?**
+    ```sql
+    BEGIN;
+    UPDATE accounts SET balance = balance - 500 WHERE id = 1;  -- Step 1
+    SAVEPOINT after_debit;                                      -- Checkpoint
+    UPDATE accounts SET balance = balance + 500 WHERE id = 2;  -- Step 2
+    -- If Step 2 fails:
+    ROLLBACK TO SAVEPOINT after_debit;  -- Undoes only Step 2
+    COMMIT;                             -- Commits only Step 1
+    ```
+
+31. **Difference between `SEQUENCE` and `AUTO_INCREMENT` / `SERIAL`.**  
+    *Answer*: `SEQUENCE` (PostgreSQL) is an independent database object generating unique integers. Multiple tables can share a single sequence. `AUTO_INCREMENT` (MySQL) / `SERIAL` (PostgreSQL shorthand) are column-level integer generators specific to one table. Sequences support `CYCLE`, `CACHE`, `INCREMENT BY` options.
+
+32. **What is a Materialized View? When to use vs regular View?**  
+    *Answer*: A Materialized View stores query results physically on disk (like a cached table), refreshed on-demand (`REFRESH MATERIALIZED VIEW`). Regular Views execute underlying query at every access. Use Materialized Views for expensive aggregation queries in reporting/OLAP where slight staleness is acceptable.
+
+33. **What happens to Foreign Keys during `TRUNCATE`?**  
+    *Answer*: `TRUNCATE` raises an error if the table is referenced by a FK from another table with existing rows. Use `TRUNCATE table_a, table_b CASCADE` to truncate both tables simultaneously, maintaining referential integrity.
+
+34. **What is an Expression Index (Function-Based Index)?**
+    ```sql
+    -- Index on transformed value (enables SARGable queries on LOWER(email))
+    CREATE INDEX idx_email_lower ON users (LOWER(email));
+    -- Now this query can use the index:
+    SELECT * FROM users WHERE LOWER(email) = 'user@example.com';
+    ```
+
+35. **What is a Partial Index?**
+    ```sql
+    -- Only index rows matching the WHERE predicate
+    CREATE INDEX idx_active_orders ON orders (customer_id, created_at)
+    WHERE status = 'active';
+    -- Smaller, faster index. Only useful for queries that include WHERE status = 'active'
+    ```
 
 ### 🔗 Joins & Subqueries (25 Qs)
-36. **Explain `INNER JOIN`, `LEFT JOIN`, `RIGHT JOIN`, `FULL JOIN`, `CROSS JOIN`.**  
-37. **What is a Self-Join and when is it used?**  
+
+36. **Explain INNER JOIN, LEFT JOIN, RIGHT JOIN, FULL JOIN, CROSS JOIN.**  
+    - `INNER JOIN`: Only rows with matching values in BOTH tables.  
+    - `LEFT JOIN`: ALL rows from left table + matched rows from right (NULL if no match).  
+    - `RIGHT JOIN`: ALL rows from right table + matched rows from left (NULL if no match).  
+    - `FULL OUTER JOIN`: ALL rows from BOTH tables with NULLs where no match.  
+    - `CROSS JOIN`: Cartesian product — every row in A paired with every row in B ($N \times M$ rows).
+
+37. **What is a Self-Join and when is it used?**
+    ```sql
+    -- Find all employees and their managers (manager is also in employees table)
+    SELECT e.name AS employee, m.name AS manager
+    FROM employees e
+    LEFT JOIN employees m ON e.manager_id = m.emp_id;
+    ```
+
 38. **Correlated Subquery vs Non-Correlated Subquery.**  
-39. **`EXISTS` vs `IN`: Performance & NULL handling differences.**  
-40. **What is a `LATERAL` join in PostgreSQL?**  
-41–60. (Details on anti-joins, semi-joins, join order, Cartesian explosion, multiple join performance, subquery unnesting).
+    - **Non-Correlated**: Subquery executes ONCE independently. `WHERE salary > (SELECT AVG(salary) FROM employees)`.  
+    - **Correlated**: Subquery references outer query's row — executes ONCE PER ROW of outer query. `WHERE salary > (SELECT AVG(salary) FROM employees WHERE dept_id = e.dept_id)`. Correlated subqueries are often slower; prefer JOINs or window functions.
+
+39. **`EXISTS` vs `IN` — Performance & NULL handling.**  
+    - `EXISTS`: Stops scanning after first match (short-circuit). Safe with NULLs. Better when subquery returns large result sets.  
+    - `IN`: Evaluates entire subquery list. **DANGEROUS**: If subquery returns ANY NULL, `NOT IN` returns UNKNOWN for all rows.  
+    - Rule: Always prefer `EXISTS` / `NOT EXISTS` over `IN` / `NOT IN`.
+
+40. **What is a LATERAL join in PostgreSQL?**
+    ```sql
+    -- LATERAL allows subquery to reference columns from preceding FROM items
+    SELECT u.user_id, recent.order_total
+    FROM users u
+    JOIN LATERAL (
+        SELECT order_total 
+        FROM orders o
+        WHERE o.user_id = u.user_id   -- References u from outer query — only possible with LATERAL
+        ORDER BY created_at DESC
+        LIMIT 1
+    ) AS recent ON true;
+    -- Without LATERAL: subquery cannot reference u.user_id
+    -- Use case: Top-N per group without window function; parameterized subqueries
+    ```
+
+41. **What is a Semi-Join?**  
+    *Answer*: Returns rows from the left table that have at least one matching row in right table, but does NOT duplicate left rows even if multiple right rows match. Implemented via `EXISTS` or `IN`. Database optimizers often transform `WHERE EXISTS` into an internal semi-join plan for efficiency.
+
+42. **What is an Anti-Join?**  
+    *Answer*: Returns rows from left table that have NO matching rows in right table. Implemented via `NOT EXISTS`, `NOT IN` (dangerous with NULLs), or `LEFT JOIN ... WHERE right.pk IS NULL`.
+
+43. **What causes Cartesian explosion? How to prevent it?**  
+    *Answer*: Missing or incorrect JOIN condition. `FROM A, B` without ON clause joins every row of A with every row of B ($N \times M$ rows). Prevention: Always specify explicit ON conditions; use INNER JOIN syntax; monitor query plans for unexpected Nested Loops on large tables.
+
+44. **How does the query optimizer determine join order?**  
+    *Answer*: The Cost-Based Optimizer (CBO) uses table statistics (row counts, cardinality, distinct value histograms) to estimate the cheapest join order. `ANALYZE` refreshes statistics. Large difference between actual vs estimated rows → stale statistics causing bad plans (`EXPLAIN ANALYZE` shows actual vs estimated rows).
+
+45–60. See `Top_Questions.md` for full solutions on Gaps-and-Islands, Recursive CTEs, Running Totals, Pivot patterns, SCD Type 2, and advanced subquery unnesting scenarios.
 
 ### 📊 Aggregation & Grouping (15 Qs)
 61. **Execution order of `WHERE`, `GROUP BY`, `HAVING`, `SELECT`.**  

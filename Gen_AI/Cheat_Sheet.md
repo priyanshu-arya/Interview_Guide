@@ -86,3 +86,39 @@
   - **Query ($Q$)**: The search query typed into Google.
   - **Key ($K$)**: The indexing keywords of indexed web pages.
   - **Value ($V$)**: The actual content of the web page returned.
+
+---
+
+### 6. Agentic AI & Prompting Patterns
+
+| Pattern | Full Name | Mechanism | When to Use |
+| :--- | :--- | :--- | :--- |
+| **Zero-Shot** | Direct Prompting | No examples; relies on model's parametric knowledge | Simple factual Q&A |
+| **Few-Shot** | In-Context Learning | 2–5 input-output examples in the prompt | When output format is critical |
+| **CoT** | Chain-of-Thought | "Think step by step" prompt elicits explicit reasoning trace | Math, logic, multi-step reasoning |
+| **ToT** | Tree of Thoughts | Model explores multiple reasoning branches, evaluates, backtracks | Complex problem solving requiring search |
+| **ReAct** | Reason + Act | Interleaves reasoning steps with tool calls and observation parsing | Agentic tool use, RAG agents |
+| **Self-Consistency** | Majority Voting | Sample multiple CoT paths; take majority vote answer | Improves reliability on reasoning tasks |
+
+### 7. Hallucination Mitigation Strategies
+
+| Strategy | Mechanism | Effectiveness | Cost |
+| :--- | :--- | :--- | :--- |
+| **RAG** | Ground generation in retrieved context | High (factual accuracy) | Medium (vector search latency) |
+| **RLHF / DPO Alignment** | Train model to prefer truthful responses | Medium-High | Very High (requires training) |
+| **Constrained Decoding** | Force model to choose from valid options/schema only | High for structured outputs | Low |
+| **Self-Consistency** | Sample multiple outputs; vote for most consistent | Medium | Medium (3–10x more inference) |
+| **Llama Guard / NeMo** | Post-hoc safety/fact classifier on outputs | Medium | Low (separate inference pass) |
+| **Tool Use (Grounding)** | Force model to compute facts via calculator/search API | Very High | Medium |
+| **Factuality Training** | Fine-tune on attribution-labeled factual data | Medium | High |
+
+### 8. Open-Source LLM Landscape (2025–2026)
+
+| Model Family | Creator | Params | Architecture Highlights | Best For |
+| :--- | :--- | :--- | :--- | :--- |
+| **Llama-3.1 / 3.2** | Meta | 8B, 70B, 405B | GQA, RoPE, SwiGLU, RMSNorm, 128K context | General reasoning, open deployment |
+| **Mistral / Mixtral** | Mistral AI | 7B / 8x7B MoE | Sliding Window Attention, Grouped QA, 32K ctx | Efficient inference, long context |
+| **Gemma-2** | Google DeepMind | 2B, 9B, 27B | Interleaved local/global attention, logit softcapping | Edge deployment, multilingual |
+| **Phi-3 / Phi-4** | Microsoft | 3.8B, 14B | Trained on curated high-quality data ("textbooks are all you need") | Small model excellence |
+| **DeepSeek-R1** | DeepSeek AI | 7B–671B | MoE with GRPO RL alignment, reasoning-focused | Math, coding, STEM reasoning |
+| **Qwen-2.5** | Alibaba | 7B, 72B | Long-context (128K), multimodal variants | Multilingual, code generation |

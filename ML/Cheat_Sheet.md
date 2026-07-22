@@ -159,3 +159,92 @@ for epoch in range(num_epochs):
 - 💡 **L1 vs L2 Shape**:
   - **L1** (Lasso) = Diamond corners on axis $\to$ Hits zero weights $\to$ **Sparse**.
   - **L2** (Ridge) = Smooth Circle $\to$ Shrinks weights uniformly $\to$ **Non-Sparse**.
+
+---
+
+## 6. Confusion Matrix Template
+
+> [!IMPORTANT]
+> The confusion matrix is the **#1 most-drawn diagram** in ML/DS interviews. Know it cold.
+
+```
+                   Predicted POSITIVE    Predicted NEGATIVE
+Actual POSITIVE  |   True Positive (TP)  | False Negative (FN)  |  ← Type II Error
+Actual NEGATIVE  |   False Positive (FP) | True Negative (TN)   |  ← Type I Error
+```
+
+| Metric | Formula | Intuition |
+|--------|---------|-----------|
+| **Accuracy** | $(TP + TN) / (TP + TN + FP + FN)$ | Overall correctness (unreliable on imbalanced data) |
+| **Precision** | $TP / (TP + FP)$ | Of all positive predictions, how many were right? |
+| **Recall (Sensitivity)** | $TP / (TP + FN)$ | Of all actual positives, how many did we catch? |
+| **Specificity** | $TN / (TN + FP)$ | Of all actual negatives, how many did we correctly identify? |
+| **F1 Score** | $2 \cdot \frac{Precision \cdot Recall}{Precision + Recall}$ | Harmonic mean — balances Precision and Recall |
+| **F-Beta Score** | $(1 + \beta^2) \cdot \frac{P \cdot R}{\beta^2 P + R}$ | $\beta > 1$: Recall-weighted; $\beta < 1$: Precision-weighted |
+
+**Key Tradeoffs**:
+- **High Precision, Low Recall**: Model is conservative — misses many positives but rarely false alarms. (Good for: spam filtering, medical device alerts)
+- **High Recall, Low Precision**: Model is aggressive — catches everything but with many false alarms. (Good for: cancer screening, fraud detection)
+
+---
+
+## 7. ROC-AUC vs PR-AUC
+
+> [!TIP]
+> When class distribution is **imbalanced**, always use **PR-AUC**. ROC-AUC can be misleadingly optimistic.
+
+```
+ROC Curve: True Positive Rate (Recall) vs False Positive Rate
+PR Curve:  Precision vs Recall
+
+A random classifier has:
+  - ROC-AUC = 0.5 (diagonal line)
+  - PR-AUC  = class_positive_rate (baseline = prevalence)
+```
+
+| Dimension | ROC-AUC | PR-AUC |
+|-----------|---------|--------|
+| **X-Axis** | False Positive Rate = FP/(FP+TN) | Recall = TP/(TP+FN) |
+| **Y-Axis** | True Positive Rate (Recall) | Precision = TP/(TP+FP) |
+| **Random Baseline** | AUC = 0.5 | AUC = class prevalence |
+| **Best When** | Balanced class distribution | Imbalanced classes (fraud, rare disease) |
+| **Insensitive To** | Class imbalance (uses TN) | Large TN counts (doesn't include TN) |
+| **Interpretation** | P(model ranks random positive above random negative) | Overall quality at detecting the minority class |
+
+**Decision Rule**: Use **PR-AUC** when the positive class is rare (<10% of data). Use **ROC-AUC** for balanced datasets.
+
+---
+
+## 8. Cross-Validation Strategies
+
+| Strategy | How It Works | When To Use | Pitfall |
+|----------|-------------|-------------|---------|
+| **K-Fold** | Splits data into K folds; each fold used once as validation | Standard tabular ML | Data leakage if preprocessing done before split |
+| **Stratified K-Fold** | K-Fold with class distribution preserved in each fold | Classification with class imbalance | Still leaks if preprocessing not inside pipeline |
+| **Repeated K-Fold** | K-Fold repeated N times with different shuffles | Small datasets to reduce variance | Computationally expensive (K×N model fits) |
+| **Time Series Split** | Train on past, validate on future (no shuffling!) | Any time-ordered data | Cannot shuffle — temporal order must be preserved |
+| **Group K-Fold** | Ensures all rows of a group stay in same fold | Medical data (patient groups), NLP (per-document) | Group leakage if ignored |
+| **Leave-One-Out (LOO)** | K = N (each sample is a validation set once) | Very small datasets (<100 samples) | Very slow; high variance estimates |
+
+```python
+from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
+from sklearn.pipeline import Pipeline
+
+# Stratified K-Fold for imbalanced classification
+skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+for fold, (train_idx, val_idx) in enumerate(skf.split(X, y)):
+    X_tr, X_val = X[train_idx], X[val_idx]
+    y_tr, y_val = y[train_idx], y[val_idx]
+    model.fit(X_tr, y_tr)
+    print(f"Fold {fold} AUC: {roc_auc_score(y_val, model.predict_proba(X_val)[:, 1]):.4f}")
+
+# Time Series Cross-Validation (no shuffle, forward-only)
+tscv = TimeSeriesSplit(n_splits=5, gap=7)  # 7-day gap prevents leakage
+for train_idx, val_idx in tscv.split(X):
+    # Train always before val in time
+    X_tr, X_val = X.iloc[train_idx], X.iloc[val_idx]
+```
+
+> [!WARNING]
+> **Always fit preprocessing (scaling, imputation, encoding) INSIDE the CV loop** using `sklearn.Pipeline`. Fitting a scaler on all data before CV causes data leakage from validation set statistics into the training process.
+
